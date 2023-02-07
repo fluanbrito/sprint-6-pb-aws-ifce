@@ -28,3 +28,30 @@ def v2_description(event, context):
     response = {"statusCode": 200, "body": json.dumps(body)}
 
     return response
+
+def v1_tts(event, context):
+    body = {
+        "message": "Teste rota v1_tts."
+    }
+
+    response = {"statusCode": 200, "body": json.dumps(body)}
+
+    return response
+
+def v2_tts(event, context):
+    body = {
+        "message": "Teste rota v2_tts."
+    }
+
+    response = {"statusCode": 200, "body": json.dumps(body)}
+
+    return response
+
+def v3_tts(event, context):
+    body = {
+        "message": "Teste rota v3_tts."
+    }
+
+    response = {"statusCode": 200, "body": json.dumps(body)}
+
+    return response

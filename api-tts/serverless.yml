@@ -24,3 +24,21 @@ functions:
       - httpApi:
           path: /v2
           method: get
+  v1tts:
+    handler: handler.v1_tts
+    events:
+      - httpApi:
+          path: /v1/tts
+          method: get
+  v2tts:
+    handler: handler.v2_tts
+    events:
+      - httpApi:
+          path: /v2/tts
+          method: get
+  v3tts:
+    handler: handler.v3_tts
+    events:
+      - httpApi:
+          path: /v3/tts
+          method: get
