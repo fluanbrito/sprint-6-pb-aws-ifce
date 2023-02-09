@@ -1,10 +1,8 @@
 service: api-tts
 frameworkVersion: '3'
-
 provider:
   name: aws
   runtime: python3.9
-
 functions:
   health:
     handler: handler.health
@@ -29,16 +27,16 @@ functions:
     events:
       - httpApi:
           path: /v1/tts
-          method: get
+          method: post
   v2tts:
     handler: handler.v2_tts
     events:
       - httpApi:
           path: /v2/tts
-          method: get
+          method: post
   v3tts:
     handler: handler.v3_tts
     events:
       - httpApi:
           path: /v3/tts
-          method: get
+          method: post
