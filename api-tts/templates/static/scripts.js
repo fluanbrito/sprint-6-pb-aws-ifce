@@ -6,7 +6,7 @@ form.addEventListener("submit", async (event) => {
   const phrase = formData.get("phrase");
   
   try {
-    const response = await axios.post("https://1cqp5koc14.execute-api.us-east-1.amazonaws.com/v1/tts", {
+    const response = await axios.post("http://127.0.0.1:5500/public/main2.html", {
       phrase
     });
     const { received_phrase, url_to_audio, created_audio } = response.data;
