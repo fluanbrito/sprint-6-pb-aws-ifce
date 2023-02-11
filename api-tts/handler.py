@@ -21,6 +21,11 @@ def v1_tts(event, context):
         body = event['body']
         parsed_body = urllib.parse.parse_qs(body)
         phrase = parsed_body.get('phrase')[0]
+
+        # retirando caracteres de quebra de linha
+        if phrase.find("\r\n"):
+            phrase = phrase.replace("\r\n", "")
+
         print(phrase)
 
         # gera o audio usando o polly
