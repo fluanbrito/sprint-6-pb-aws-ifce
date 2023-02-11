@@ -6,21 +6,25 @@ provider:
   runtime: python3.9
 
 functions:
-  health:
-    handler: handler.health
+  # health:
+  #   handler: handler.health
+  #   events:
+  #     - http:
+  #         path: /
+  #         method: get
+  v1_form:
+    handler: handler.v1_form
     events:
-      - httpApi:
-          path: /
-          method: get
-  v1Description:
-    handler: handler.v1_description
-    events:
-      - httpApi:
+      - http:
           path: /v1
           method: get
-  v2Description:
-    handler: handler.v2_description
+  v1_tts:
+    handler: handler.v1_tts
     events:
-      - httpApi:
-          path: /v2
-          method: get
+      - http:
+          path: /v1/tts
+          method: post
+          cors: true
+
+plugins:
+  - serverless-python-requirements

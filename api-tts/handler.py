@@ -1,30 +1,41 @@
 import json
+import boto3
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
+app = Flask(__name__)
+CORS(app)
 
-def health(event, context):
-    body = {
-        "message": "Go Serverless v3.0! Your function executed successfully!",
-        "input": event,
-    }
+polly = boto3.client('polly')
+s3 = boto3.client('s3')
 
-    response = {"statusCode": 200, "body": json.dumps(body)}
+@app.route('/v1', methods=['GET'])
+def v1_form():
+    with open('form.html') as file:
+        return file.read()
 
-    return response
+@app.route('/v1/tts', methods=['POST'])
+def v1_tts():
+    received_phrase = request.form['phrase']
+    response = polly.synthesize_speech(
+        Text=received_phrase,
+        OutputFormat='mp3',
+        VoiceId='Joanna'
+    )
+    audio = response['AudioStream'].read()
 
-def v1_description(event, context):
-    body = {
-        "message": "TTS api version 1."
-    }
+    s3.put_object(
+        Bucket='api-tts-audio-storage',
+        Body=audio,
+        Key=f'{received_phrase}.mp3'
+    )
 
-    response = {"statusCode": 200, "body": json.dumps(body)}
+    url = f'https://s3.amazonaws.com/api-tts-audio-storage/{received_phrase}.mp3'
+    return jsonify({
+        'received_phrase': received_phrase,
+        'url_to_audio': url,
+        'created_audio': 'data não disponível'
+    })
 
-    return response
-
-def v2_description(event, context):
-    body = {
-        "message": "TTS api version 2."
-    }
-
-    response = {"statusCode": 200, "body": json.dumps(body)}
-
-    return response
+def handler(event, context):
+    return app(event, context)
