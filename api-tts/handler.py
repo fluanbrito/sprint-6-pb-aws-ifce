@@ -45,10 +45,23 @@ def v2_description(event, context):
 
     return response
 
+def tts_get(event, context):
+
+    with open('templates/index.html', 'r') as f:
+        html_content = f.read()
+    
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'text/html',
+        },
+        'body': html_content,
+    }
 
 def v1_tts(event, context):
     
-    phrase = event['phrase']
+    payload = json.loads(event["body"])
+    phrase = payload["phrase"]
 
     s3 = boto3.client('s3')
     polly = boto3.client('polly')
@@ -145,6 +158,20 @@ def v3_tts(event, context):
         Bucket='bucket-sprint6',
         Key=filename,
         Body=audio,
+    )
+
+    hash_frase = str(hash(phrase))[1:len(phrase)]
+    
+    # Salva o id, frase e url no Dynamo DB
+    db = boto3.resource('dynamodb')
+    table = db.Table("audio-data-sprint6")
+
+    table.put_item(
+        Item={
+        'hash': hash_frase,
+        'frase': phrase,
+        'url':f"https://bucket-sprint6.s3.amazonaws.com/{filename}"
+        }
     )
 
     # Return the URL of the generated audio file

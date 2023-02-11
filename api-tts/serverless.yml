@@ -22,6 +22,12 @@ functions:
       - httpApi:
           path: /v2
           method: get
+  ttsget:
+    handler: handler.tts_get
+    events:
+      - httpApi:
+          path: /v1/tts
+          method: get
   v1tts:
     handler: handler.v1_tts
     events:

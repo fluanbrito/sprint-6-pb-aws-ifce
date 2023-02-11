@@ -17,7 +17,7 @@
         <h1>Converta seu texto para áudio!</h1>
     </div>
     <div id="search">
-        <form action="/v1/tts" id="tts-form" method="post">
+        <form onsubmit="submitForm(event)" id="tts-form" method="post">
             <input type="text" id="input" name="textov1" class="form-control" placeholder="Insira seu texto aqui">
             <button type="submit" id="button" class="btn btn-primary">Converter (Versão 1)</button>
         </form>

@@ -1,7 +1,6 @@
 from flask import Flask, render_template, flash, redirect, request, jsonify
 import os
 from handler import *
-#from functions import *
 
 app = Flask(__name__)
 
