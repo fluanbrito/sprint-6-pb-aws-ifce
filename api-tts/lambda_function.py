@@ -27,7 +27,7 @@ def lambda_handler(event, context):
     #Enviando notificação sobre novos posts para SNS
     client = boto3.client('sns')
     client.publish(
-        TopicArn = os.environ['SNS_TOPIC']
+        TopicArn = os.environ['SNS_TOPIC'],
         Message = recordId
     )
 

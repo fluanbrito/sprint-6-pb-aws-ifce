@@ -1,4 +1,8 @@
+#Configurações e acessos
+.config/
+
 # Distribution / packaging
+__pycache__/
 .Python
 env/
 build/
