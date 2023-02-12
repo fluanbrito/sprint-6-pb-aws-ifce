@@ -1,25 +1,46 @@
+import datetime
+import json
+from datetime import timedelta
+
 import boto3
 
-def polly_to_s3():
-    session = boto3.Session(
-        aws_access_key_id=
-        aws_secret_access_key=
-        region_name='us-east-1'
-    )
 
-    polly = session.client('polly')
+def polly_to_s3(text):
+    polly = boto3.client('polly')
+    s3 = boto3.client('s3')
+
+    bucket = 'polly-spint6'
+    result = s3.list_objects(Bucket=bucket)
+    count = result.get('Contents', [])
 
     response = polly.synthesize_speech(
         VoiceId='Ricardo',
         OutputFormat='mp3',
-        Text='Hey, hey, hey Nego Você está na sintonia da sua Rádio Êxodos Eu, DJ Nel comandando o melhor da Black Music São 23 minutos de um novo dia O Japonês do Jardim Rosana manda um salve para o Zezé'
+        Text=str(text)
     )
-
-    s3 = session.client('s3')
 
     s3.put_object(
         Body=response['AudioStream'].read(),
-        Bucket='poliiomelite',
-        Key='polly.mp3'
+        Bucket='polly-spint6',
+        Key='polly-'+str(len(count))+'.mp3'
     )
-polly_to_s3()
+
+    url = s3.generate_presigned_url(
+    ClientMethod='get_object',
+    Params={
+        'Bucket': bucket,
+        'Key': 'polly-'+str(len(count))+'.mp3'
+    })
+
+    brasilia_offset = timedelta(hours=-3)
+    brasilia_time = datetime.datetime.utcnow() + brasilia_offset
+    formatted_time = brasilia_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    dados = {
+        "received_phrase": str(text),
+        "url_to_audio": url,
+        "created_audio": formatted_time
+    }
+
+    return json.dumps(dados)
+
