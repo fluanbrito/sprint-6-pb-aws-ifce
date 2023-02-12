@@ -1,7 +1,6 @@
-import boto3
 import json
 from datetime import datetime
-from io import BytesIO
+from utils import functions
 
 def health(event, context):
     body = {
@@ -60,125 +59,33 @@ def tts_get(event, context):
 
 def v1_tts(event, context):
     
-    payload = json.loads(event["body"])
-    phrase = payload["phrase"]
+    bibliotecas = functions.bibliotecas()
+    dados = functions.dados(event, bibliotecas[2])
+    functions.gerar_audio(dados[1], dados[4], dados[5], bibliotecas[0], bibliotecas[1])
 
-    s3 = boto3.client('s3')
-    
-    polly = boto3.client('polly', region_name='us-east-1')
-    
-    # Converter texto para áudio usando Amazon Polly
-    response = polly.synthesize_speech(
-        OutputFormat='mp3',
-        Text=phrase,
-        VoiceId='Joanna'
-    )
-    
-    audio = response['AudioStream'].read()
-
-    # Salvando áudio no S3
-    filename = "audio-xyz.mp3"
-    s3.put_object(
-        Bucket='bucket-sprint6',
-        Key=filename,
-        Body=audio,
-    )
-
-    return {
-        "received_phrase": phrase,
-        "url_to_audio": f"https://bucket-sprint6.s3.amazonaws.com/{filename}",
-        "created_audio": str(datetime.now())
-    }
+    return functions.retorno(dados[1], '', dados[4], dados[5])
 
 def v2_tts(event, context):
     
-    payload = json.loads(event["body"])
-    phrase = payload["phrase"]
+    bibliotecas = functions.bibliotecas()
+    dados = functions.dados(event, bibliotecas[2])
+    functions.gerar_audio(dados[1], dados[4], dados[5], bibliotecas[0], bibliotecas[1])
+    functions.audio_dynamo(dados[1], dados[2], dados[3], dados[4], dados[5])
 
-
-    s3 = boto3.client('s3')
-    db = boto3.resource('dynamodb')
-    polly = boto3.client('polly', region_name='us-east-1')
+    return functions.retorno(dados[1], dados[3], dados[4], dados[5])
     
-    # Converter texto para áudio usando Amazon Polly
-    response = polly.synthesize_speech(
-        OutputFormat='mp3',
-        Text=phrase,
-        VoiceId='Joanna'
-    )
-    
-    audio = response['AudioStream'].read()
-
-    # Salvando áudio para o S3
-    filename = "audio-xyz.mp3"
-    s3.put_object(
-        Bucket='bucket-sprint6',
-        Key=filename,
-        Body=audio,
-    )
-    # Gera a hash para a frase
-    hash_frase = str(hash(phrase))[1:len(phrase)]
-
-    # Salva o id, frase e url no Dynamo DB
-    
-    table = db.Table("tabela_sprint6")
-
-    table.put_item(
-        Item={
-        'hash': hash_frase,
-        'frase': phrase,
-        'url':f"https://bucket-sprint6.s3.amazonaws.com/{filename}"
-        }
-    )
-
-    return {
-        "received_phrase": phrase,
-        "url_to_audio": f"https://bucket-sprint6.s3.amazonaws.com/{filename}",
-        "created_audio": str(datetime.now()),
-        "unique_id": hash_frase
-    }
 
 def v3_tts(event, context):
-    payload = json.loads(event["body"])
-    phrase = payload["phrase"]
-
-
-    s3 = boto3.client('s3')
-    polly = boto3.client('polly', region_name='us-east-1')
     
-    # Converter texto para áudio usando Amazon Polly
-    response = polly.synthesize_speech(
-        OutputFormat='mp3',
-        Text=phrase,
-        VoiceId='Joanna'
-    )
-    
-    audio = response['AudioStream'].read()
+    bibliotecas = functions.bibliotecas()
+    dados = functions.dados(event, bibliotecas[2])
+    busca_dynamo = functions.busca_dynamo(dados[2], dados[3])
 
-    # Salvando áudio no S3
-    filename = "audio-xyz.mp3"
-    s3.put_object(
-        Bucket='bucket-sprint6',
-        Key=filename,
-        Body=audio,
-    )
+    if busca_dynamo is None:
+        functions.gerar_audio(dados[1], dados[4], dados[5], bibliotecas[0], bibliotecas[1])
+        functions.audio_dynamo(dados[1], dados[2], dados[3], dados[4], dados[5])
 
-    hash_frase = str(hash(phrase))[1:len(phrase)]
-    
-    # Salva o id, frase e url no Dynamo DB
-    db = boto3.resource('dynamodb')
-    table = db.Table("tabela_sprint6")
-
-    table.put_item(
-        Item={
-        'hash': hash_frase,
-        'frase': phrase,
-        'url':f"https://bucket-sprint6.s3.amazonaws.com/{filename}"
-        }
-    )
-
-    return {
-        "received_phrase": phrase,
-        "url_to_audio": f"https://bucket-sprint6.s3.amazonaws.com/{filename}",
-        "created_audio": str(datetime.now())
-    }
+        return functions.retorno(dados[1], dados[3], dados[4], dados[5])
+        
+    else:
+        return functions.retorno(dados[1], dados[3], dados[4], dados[5])
