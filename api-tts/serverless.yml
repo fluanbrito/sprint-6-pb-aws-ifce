@@ -6,15 +6,33 @@ provider:
   runtime: python3.9
 
 functions:
+  index:
+    handler: handler.index
+    events:
+      - httpApi:
+          path: /
+          method: get
   v1_form:
     handler: handler.v1_form
     events:
       - httpApi:
           path: /v1
           method: get
+  v2_form:
+    handler: handler.v2_form
+    events:
+      - httpApi:
+          path: /v2
+          method: get
   v1_tts:
     handler: handler.v1_tts
     events:
       - httpApi:
           path: /v1/tts
+          method: post
+  v2_tts:
+    handler: handler.v2_tts
+    events:
+      - httpApi:
+          path: /v2/tts
           method: post
