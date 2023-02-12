@@ -24,3 +24,9 @@ functions:
       - httpApi:
           path: /v2
           method: get
+  v1_tts:
+    handler: routers/rota1.v1_tts
+    events:
+      - http:
+          path: v1/tts
+          method: post
