@@ -73,19 +73,12 @@ Com base nas atividades anteriores realizadas, foi criado uma página html que i
 
 ## 📝 Organização do Código
 
-![img](https://i.imgur.com/GL6yhEl.png)
-
-Acima é o demonstrativo de como foi organizado o projeto e subdivido em pastas conforme era a atuação do código.
-
-A organização do código ajudou a evitar erros e bugs, uma vez que as partes do código estão claramente separadas e identificadas. Ela também facilitou a implementação de novas funcionalidades e a resolução de problemas, pois se tornou mais fácil localizar e corrigir o código relevante. 
-
-Em resumo, a organização do código foi fundamental para o sucesso do projeto, pois tornou o processo de desenvolvimento mais eficiente e efetivo.
 <hr>
 <br>
 
 ## 🖥 Captura de frase e converver em Audio MP3 via Polly(Rota 1 , Rota 2, Rota 3)
 
-```bash
+```
 import boto3
 import json
 from datetime import datetime
@@ -144,21 +137,16 @@ A função v2_description retorna a mensagem "TTS api version 2." em formato JSO
 
 ## 📤 Atividade - Parte 1(AWS Polly, Armazenamento S3, chamada da API)
 
-```bash
+```
 def v1_tts(event, context):
-    
-    payload = json.loads(event["body"])
-    phrase = payload["phrase"]
-
+    phrase = event['phrase']
     s3 = boto3.client('s3')
     polly = boto3.client('polly')
-    
     response = polly.synthesize_speech(
         OutputFormat='mp3',
         Text=phrase,
         VoiceId='Joanna'
     )
-    
     audio = response['AudioStream'].read()
 
     filename = "audio-xyz.mp3"
@@ -175,14 +163,14 @@ def v1_tts(event, context):
     }
 ```
 
-A função v1_tts recebe uma frase como entrada na requisição e usa a Amazon Polly para converter a frase em um arquivo de áudio MP3. Em seguida, o arquivo de áudio é salvo no Amazon S3 e a URL para o arquivo de áudio e a hora em que o áudio foi criado é retornada como resposta.
+A função v1_tts recebe uma frase como entrada na requisição e usa a Amazon Polly para converter a frase em um arquivo de áudio MP3. Em seguida, o arquivo de áudio é salvo no Amazon S3 e a URL para o arquivo de áudio é retornada como resposta da API.
 
 <hr>
 <br>
 
 ## 📤 Atividade - Parte 2(Hash, AWS Polly, Armazenamento S3, DynamoDB, Chamada API)
 
-```bash
+```
 def v2_tts(event, context):
     phrase = event['phrase']
     s3 = boto3.client('s3')
@@ -228,13 +216,11 @@ A função v2_tts funciona de maneira semelhante à função v1_tts, mas também
 <br>
 
 ## 📤 Atividade - Parte 3(Hash, AWS Polly, Armazenamento S3, DynamoDB)
-```bash
+```
 def v3_tts(event, context):
     phrase = event['phrase']
-
     s3 = boto3.client('s3')
     polly = boto3.client('polly')
-    
     response = polly.synthesize_speech(
         OutputFormat='mp3',
         Text=phrase,
@@ -249,20 +235,6 @@ def v3_tts(event, context):
         Key=filename,
         Body=audio,
     )
-
-    hash_frase = str(hash(phrase))[1:len(phrase)]
-
-    db = boto3.resource('dynamodb')
-    table = db.Table("audio-data-sprint6")
-
-    table.put_item(
-        Item={
-        'hash': hash_frase,
-        'frase': phrase,
-        'url':f"https://bucket-sprint6.s3.amazonaws.com/{filename}"
-        }
-    )
-
     return {
         "received_phrase": phrase,
         "url_to_audio": f"https://bucket-sprint6.s3.amazonaws.com/{filename}",
@@ -275,7 +247,7 @@ A função v3_tts é similar à função v1_tts, mas não possui nenhuma funcion
 <br>
 
 ## ⬇️ Desenvolvimento da API
-```bash
+```
 from flask import Flask, render_template, flash, redirect, request, jsonify
 import os
 from handler import *
@@ -285,11 +257,9 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return health('','')
-
 @app.route('/v1')
 def v1_get():
     return v1_description('', '')
-
 @app.route('/v2')
 def v2_get():
     return v2_description('', '')
@@ -323,10 +293,6 @@ def v3_post():
             "phrase": request.form.get("textov3")
         }
         return v2_tts(frase, '')
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True)
 ```
 
 
@@ -356,10 +322,10 @@ A aplicação é iniciada com o comando "app.run(debug=True)" é a porta para a 
 <hr>
 
 ## ♾️ Equipe
-- [Davi Santos](https://github.com/davi222-santos)
-- [Edivalço Araújo](https://github.com/EdivalcoAraujo)
-- [Luan Ferreira](https://github.com/fluanbrito)
-- [Nicolas](https://github.com/Niccofs)
+- Davi Santos
+- Edivalço Araújo
+- Luan Ferreira
+- Nicolas
 
 
 <br>

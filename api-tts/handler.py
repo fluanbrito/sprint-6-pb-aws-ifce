@@ -91,11 +91,13 @@ def v1_tts(event, context):
     }
 
 def v2_tts(event, context):
-    phrase = event['phrase']
+    
+    payload = json.loads(event["body"])
+    phrase = payload["phrase"]
 
 
     s3 = boto3.client('s3')
-    
+    db = boto3.resource('dynamodb')
     polly = boto3.client('polly', region_name='us-east-1')
     
     # Converter texto para áudio usando Amazon Polly
@@ -118,8 +120,8 @@ def v2_tts(event, context):
     hash_frase = str(hash(phrase))[1:len(phrase)]
 
     # Salva o id, frase e url no Dynamo DB
-    db = boto3.resource('dynamodb')
-    table = db.Table("audio-data-sprint6")
+    
+    table = db.Table("tabela_sprint6")
 
     table.put_item(
         Item={
@@ -137,7 +139,8 @@ def v2_tts(event, context):
     }
 
 def v3_tts(event, context):
-    phrase = event['phrase']
+    payload = json.loads(event["body"])
+    phrase = payload["phrase"]
 
 
     s3 = boto3.client('s3')
@@ -164,7 +167,7 @@ def v3_tts(event, context):
     
     # Salva o id, frase e url no Dynamo DB
     db = boto3.resource('dynamodb')
-    table = db.Table("audio-data-sprint6")
+    table = db.Table("tabela_sprint6")
 
     table.put_item(
         Item={
