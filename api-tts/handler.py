@@ -64,9 +64,10 @@ def v1_tts(event, context):
     phrase = payload["phrase"]
 
     s3 = boto3.client('s3')
-    polly = boto3.client('polly')
     
-    # Convert text to speech using Amazon Polly
+    polly = boto3.client('polly', region_name='us-east-1')
+    
+    # Converter texto para áudio usando Amazon Polly
     response = polly.synthesize_speech(
         OutputFormat='mp3',
         Text=phrase,
@@ -75,7 +76,7 @@ def v1_tts(event, context):
     
     audio = response['AudioStream'].read()
 
-    # Save audio file to S3
+    # Salvando áudio no S3
     filename = "audio-xyz.mp3"
     s3.put_object(
         Bucket='bucket-sprint6',
@@ -83,7 +84,6 @@ def v1_tts(event, context):
         Body=audio,
     )
 
-    # Return the URL of the generated audio file
     return {
         "received_phrase": phrase,
         "url_to_audio": f"https://bucket-sprint6.s3.amazonaws.com/{filename}",
@@ -95,9 +95,10 @@ def v2_tts(event, context):
 
 
     s3 = boto3.client('s3')
-    polly = boto3.client('polly')
     
-    # Convert text to speech using Amazon Polly
+    polly = boto3.client('polly', region_name='us-east-1')
+    
+    # Converter texto para áudio usando Amazon Polly
     response = polly.synthesize_speech(
         OutputFormat='mp3',
         Text=phrase,
@@ -106,7 +107,7 @@ def v2_tts(event, context):
     
     audio = response['AudioStream'].read()
 
-    # Save audio file to S3
+    # Salvando áudio para o S3
     filename = "audio-xyz.mp3"
     s3.put_object(
         Bucket='bucket-sprint6',
@@ -128,7 +129,6 @@ def v2_tts(event, context):
         }
     )
 
-    # Return the URL of the generated audio file
     return {
         "received_phrase": phrase,
         "url_to_audio": f"https://bucket-sprint6.s3.amazonaws.com/{filename}",
@@ -141,9 +141,9 @@ def v3_tts(event, context):
 
 
     s3 = boto3.client('s3')
-    polly = boto3.client('polly')
+    polly = boto3.client('polly', region_name='us-east-1')
     
-    # Convert text to speech using Amazon Polly
+    # Converter texto para áudio usando Amazon Polly
     response = polly.synthesize_speech(
         OutputFormat='mp3',
         Text=phrase,
@@ -152,7 +152,7 @@ def v3_tts(event, context):
     
     audio = response['AudioStream'].read()
 
-    # Save audio file to S3
+    # Salvando áudio no S3
     filename = "audio-xyz.mp3"
     s3.put_object(
         Bucket='bucket-sprint6',
@@ -174,7 +174,6 @@ def v3_tts(event, context):
         }
     )
 
-    # Return the URL of the generated audio file
     return {
         "received_phrase": phrase,
         "url_to_audio": f"https://bucket-sprint6.s3.amazonaws.com/{filename}",

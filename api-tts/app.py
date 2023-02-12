@@ -47,6 +47,15 @@ def v3_post():
         }
         return v2_tts(frase, '')
 
+@app.route('/menu', methods=['GET', 'POST'])
+def ttsget():
+    if request.method == 'GET':
+        return render_template("index.html")
+    else:
+        frase = {
+            "phrase": request.form.get("textov1")
+        }
+        return v1_tts(frase, '')
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
