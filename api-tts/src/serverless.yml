@@ -1,0 +1,78 @@
+service: api-grupo-4-serverless
+
+custom: 
+  stage: ${opt:stage, self:provider.stage}
+  rotaDynamoDBTable: dynamo-${self:custom.stage}-rotaV2-table
+
+provider:
+  name: aws
+  region: us-east-1
+  runtime: python3.9
+  stage: routeV2
+
+#Configuração função POST/Create
+functions:
+  rotaDynamoDB-post:
+    handler: src/rotaV2.create
+    environment: 
+      TABLE: ${self:service}-${sls:stage}
+    runtime: python3.9
+    memorySize:  256
+    timeout:  20
+    events:
+      - http:
+         path: /v2/tts
+         method: post
+         cors: true
+         integration: lambda
+  iam:
+     role: 
+       Statements:
+         - Effect: Allow
+           Action:
+             - dynamodb: PutItem #insert
+             - dynamodb: Scan #select
+             - dynamodb: Query
+
+           Resource:
+             - !GetAtt rotaV2Table.Arn
+
+
+#Configuração função GET/Listar
+  rotaDynamoDB-get:
+    handler:  src/rotaV3.list
+    environment:
+      TABLE:  ${self:custom.rotaV3Table}
+    runtime:  ${self:provider.runtime}
+    memorySize:  256
+    timeout:  20
+    events:
+      - http:
+          path:  /v3/tts
+          method: get
+          private: true
+          integration: lambda
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - 'dynamodb:Scan'
+        Resource:
+          - !GetAtt rotaV3.Arn
+
+resources:
+  - Resources:
+     rotaDynamoDBTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.rotaV3Table}  
+
+
+plugins:
+ - serverless-iam-roles-per-function
