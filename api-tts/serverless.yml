@@ -13,25 +13,25 @@ functions:
           path: /
           method: get
   v1_form:
-    handler: handler.v1_form
+    handler: handlers/v1.v1_form
     events:
       - httpApi:
           path: /v1
           method: get
   v2_form:
-    handler: handler.v2_form
+    handler: handlers/v2.v2_form
     events:
       - httpApi:
           path: /v2
           method: get
   v1_tts:
-    handler: handler.v1_tts
+    handler: handlers/v1.v1_tts
     events:
       - httpApi:
           path: /v1/tts
           method: post
   v2_tts:
-    handler: handler.v2_tts
+    handler: handlers/v2.v2_tts
     events:
       - httpApi:
           path: /v2/tts
