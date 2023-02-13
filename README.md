@@ -1,252 +1,296 @@
-# Avaliação Sprint 6 - Programa de Bolsas Compass.uol / AWS e IFCE
+![imagem compass](https://vetores.org/d/compass-uol.svg)
+### Atividade Avaliativa - Referente a 6° Sprint do programa de Bolsas Compass UOL 
+ 
+### Projeto foi desenvolvido por: 
 
-Avaliação da sexta sprint do programa de bolsas Compass.uol para formação em machine learning para AWS.
+* [@Dayanne Bugarim](https://github.com/dayannebugarim)
+* [@Jhonatan Lobo](https://github.com/JhonatanLobo)
+* [@Tecla Fernandes](https://github.com/TeclaFernandes)
 
-***
+### Recursos necessários
 
-## Execução (Código Fonte)
+ - [Visual Studio Code](https://code.visualstudio.com/)
+ - [Amazon Web Services](https://aws.amazon.com/pt/)
+ - HTML
+ - [Python](https://www.python.org/) 
+### Objetivos da Avaliação
+Construir uma aplicação que receba input's em uma página HTML, capture essa frase e faça a transformação dela para um arquivo de audio MP3 via polly, após isso retorne o arquivo de audio para o usuário.
 
-Com base nas atividades anteriores realizadas, crie uma página html que irá capturar uma frase qualquer inserida pelo usuário e transformará essa frase em um audio em mp3 via polly.
+Passos do desenvolvimento da avaliação
+* Criação de Branch e Clone de arquivos
+* Gerenciamento de credenciais AWS
+* Execução (código fonte)
+* Deploy
 
+### Organização dos arquivos 
 
-**Especificações**:
+![imagem arquivos](https://i.imgur.com/n9FVOry.jpg)
 
-A aplicação deverá ser desenvolvida com o framework 'serverless' e deverá seguir a estrutura que já foi desenvolvida neste repo.
-
-Passo a passo para iniciar o projeto:
-1. Crie a branch para o seu grupo e efetue o clone
-
-2. Instale o framework serverless em seu computador. Mais informações [aqui](https://www.serverless.com/framework/docs/getting-started)
-```json
+* ### Construção da avaliação
+Instalação framework serverless 
+```
 npm install -g serverless
 ```
+#### Exemplos de códigos construidos 
+### main.py
+``` 
+from templates.main import main_page
 
-
-3. Gere suas credenciais (AWS Acess Key e AWS Secret) na console AWS pelo IAM. Mais informações [aqui](https://www.serverless.com/framework/docs/providers/aws/guide/credentials/)
-
-4. Em seguida insira as credenciais e execute o comando conforme exemplo:
-
-```json
-serverless config credentials \
-  --provider aws \
-  --key AKIAIOSFODNN7EXAMPLE \
-  --secret wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-  ```
-
-Também é possivel configurar via [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) executando o comando:
-
-```json
-$ aws configure
-AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
-AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-Default region name [None]: us-east-1
-Default output format [None]: ENTER
-  ```
-
-#### Observação
-As credenciais devem ficar apenas localmente no seu ambiente. Nunca exponha as crendenciais no Readme ou qualquer outro ponto do codigo.
-
-Após executar as instruções acima, o serverless estará pronto para ser utilizado e poderemos publicar a solução na AWS.
-
-5. Para efetuar o deploy da solução na sua conta aws execute (acesse a pasta `api-tts`):
+def index(event, context):
+    return {
+        'statusCode': 200,
+        'body': main_page(),
+        'headers': {
+            'Content-Type': 'text/html'
+        }
+    }
 ```
-$ serverless deploy
+### form 
 ```
-Depois de efetuar o deploy, vocẽ terá um retorno parecido com isso:
-
-```bash
-Deploying api-tts to stage dev (us-east-1)
-
-Service deployed to stack api-tts-dev (85s)
-
-endpoints:
-  GET - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/
-  GET - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/v1
-  GET - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/v2
-functions:
-  health: api-tts-dev-health (2.1 kB)
-  v1Description: api-tts-dev-v1Description (2.1 kB)
-  v2Description: api-tts-dev-v2Description (2.1 kB)
-```
-6. Abra o browser e confirme que a solução está funcionando colando os 3 endpoints que deixamos como exemplo:
-
-### Rota 1 → Get /
-
-1. Esta rota já está presente no projeto
-2. O retorno rota é:
-```json
-  {
-    "message": "Go Serverless v3.0! Your function executed successfully!",
-    "input": { 
-        ...(event)
-      }
-  }
-```
-3. Status code para sucesso da requisição será `200`
-
-### Rota 2 → Get /v1
-
-1. Esta rota já está presente no projeto
-2. O retorno rota é:
-```json
-  {
-    "message": "TTS api version 1."
-  }
- 
-```
-3. Status code para sucesso da requisição será `200`
-
-### Rota 3 → Get /v2
-1. Esta rota já está presente no projeto
-2. O retorno rota é:
-```json
-  {
-    "message": "TTS api version 2."
-  }
- 
-```
-***
-
-Após conseguir rodar o projeto base o objetivo final será divida em duas partes:
-
-## Atividade -> Parte 1 
-### Rota 4 -> Post /v1/tts
-
-Deverá ser criada a rota `/v1/tts` que receberá um post no formato abaixo:
-
-```json
-  {
-    "phrase": "converta esse texto para áudio"
-  }
-```
-- Essa frase recebida deverá ser transformada em áudio via AWS Polly
-- Deverá ser armazenada em um S3 (Que deverá ser público, apenas para a nossa avaliação)
-- A resposta da chamada da API deverá constar o endereço do audio gerado no S3
-
-Resposta a ser entregue:
-
-```json
-  {
-    "received_phrase": "converta esse texto para áudio",
-    "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
-    "created_audio": "02-02-2023 17:00:00"
-  }
+def main_page():
+    return """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Conversor de Texto para Áudio</title>
+        </head>
+        <body>
+            <h1>Conversão de Texto para Áudio</h1>
+            <div class="container">
+                <a href="/v1">V1</a>
+                <a href="/v2">V2</a>
+                <a href="/v3">V3</a>
+            </div>
+        </body>
+        </html>
 ```
 
-Dessa maneira essa será a arquitetura a ser impantada:
-
-![post-v1-tts](./assets/post-v1-tts.png)
-
-
-Exemplos de referência:
-  - https://github.com/SC5/serverless-blog-to-podcast (JS) 
-  - https://github.com/hussainanjar/polly-lambda (Python)
-
-## Atividade -> Parte 2 
-### Rota 5 -> Post /v2/tts
-
-Deverá ser criada a rota `/v2/tts` que receberá um post no formato abaixo:
-
-```json
-  {
-    "phrase": "converta esse texto para áudio e salve uma referencia no dynamoDB"
-  }
+### v1
 ```
-- Deverá ser criada uma lógica para que essa frase recebida seja um id unico (um hash).
-- Esse hash será o principal atributo em nosso dynamo db
-Exemplo: "Teste 123" será sempre o id "123456"
-- Com essa frase recebida deverá ser transformada em áudio via AWS Polly
-- Deverá ser armazenada em um S3 (Que deverá ser público, apenas para a nossa avaliação)
-- Deverá ser salva uma referencia no dynamoBD com as seguintes informações: id, frase e url do s3
-- A resposta da chamada da API deverá constar o endereço do audio gerado no S3
+from templates.form import form
+from functions.aws_services import generateAudioWithPolly, storeAudioOnS3
+from functions.helpers import getPhrase, generateFileName, dateFormatting
 
-Resposta a ser entregue:
+import json
 
-```json
-  {
-    "received_phrase": "converta esse texto para áudio",
-    "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
-    "created_audio": "02-02-2023 17:00:00",
-    "unique_id": "123456"
-    
-  }
+def v1_form(event, context):
+    return {
+        'statusCode': 200,
+        'body': form('/v1/tts', 'V1 - Armazenamento no S3'),
+        'headers': {
+            'Content-Type': 'text/html'
+        }
+    }
+
+def v1_tts(event, context):
+    try: 
+        phrase = getPhrase(event)
+
+        polly_response = generateAudioWithPolly(phrase)
+
+        file_name = generateFileName(phrase)
+
+        storeAudioOnS3(file_name, polly_response)
+
+        formatted_date = dateFormatting(polly_response)
+
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                'received_phrase': phrase,
+                'url_to_audio': f'https://api-tts-audio-storage.s3.amazonaws.com/{file_name}',
+                'created_audio': formatted_date
+            })
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                'error': str(e)
+            })
+        }
+```
+### v2
+```
+from templates.form import form
+from functions.aws_services import *
+from functions.helpers import *
+
+import json
+
+def v2_form(event, context):
+    return {
+        'statusCode': 200,
+        'body': form('/v2/tts', 'V2 - Armazenamento no S3 e DynamoDB'),
+        'headers': {
+            'Content-Type': 'text/html'
+        }
+    }
+
+def v2_tts(event, context):
+    try:
+        phrase = getPhrase(event)
+
+        unique_id = generateUniqueId(phrase)
+
+        polly_response = generateAudioWithPolly(phrase)
+
+        file_name = generateFileName(unique_id)
+
+        storeAudioOnS3(file_name, polly_response)
+
+        formatted_date = dateFormatting(polly_response)
+        
+        saveReferenceOnDynamoDB(unique_id, phrase, file_name)
+        
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                'received_phrase': phrase,
+                'url_to_audio': f'https://api-tts-audio-storage.s3.amazonaws.com/{file_name}',
+                'created_audio': formatted_date,
+                'unique_id': unique_id
+            })
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                'error': str(e)
+            })
+        }
+```
+### v3
+```
+from templates.form import form
+from functions.aws_services import *
+from functions.helpers import *
+
+import boto3
+import json
+
+def v3_form(event, context):
+    return {
+        'statusCode': 200,
+        'body': form('/v3/tts', 'V3 - Armazenamento no S3 e DynamoDB (verifica a existência do item)'),
+        'headers': {
+            'Content-Type': 'text/html'
+        }
+    }
+
+def v3_tts(event, context):
+    try:
+        phrase = getPhrase(event)
+        
+        unique_id = generateUniqueId(phrase)
+        
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table('api-tts-references')
+
+        response = table.get_item(Key={'unique_id': unique_id})
+        # verifica a existencia do item na tabela
+        if 'Item' in response:
+            item = response['Item']
+            print(f'{unique_id} já existe no DynamoDB')
+            return {
+                'received_phrase': item['received_phrase'],
+                'url_to_audio': item['url_to_audio'],
+                'unique_id': item['unique_id']
+            }
+        
+        polly_response = generateAudioWithPolly(phrase)
+        
+        file_name = generateFileName(unique_id)
+        
+        storeAudioOnS3(file_name, polly_response)
+        
+        formatted_date = dateFormatting(polly_response)
+        
+        table.put_item(
+            Item={
+                'unique_id': unique_id,
+                'received_phrase': phrase,
+                'url_to_audio': f'https://api-tts-audio-storage.s3.amazonaws.com/{file_name}'
+            }
+        )
+        
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                'received_phrase': phrase,
+                'url_to_audio': f'https://api-tts-audio-storage.s3.amazonaws.com/{file_name}',
+                'created_audio': formatted_date,
+                'unique_id': unique_id
+            })
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                'error': str(e)
+            })
+        }
+```
+### Functions 
 ```
 
-Dessa maneira essa será a arquitetura a ser impantada:
+import boto3
 
-![post-v2-tts](./assets/post-v2-tts.png)
+def generateAudioWithPolly(phrase):
+    polly = boto3.client('polly')
 
+    return polly.synthesize_speech(
+        Text=phrase,
+        VoiceId='Vitoria',
+        OutputFormat='mp3'
+    )
 
-Exemplos de referência com inserção no dynamoDb:
-  -  https://github.com/serverless/examples/tree/v3/aws-python-http-api-with-dynamodb (Python)
+def storeAudioOnS3(file_name, response):
+    s3 = boto3.client('s3')
+    s3.put_object(
+        Bucket='api-tts-audio-storage',
+        Key=file_name,
+        Body=response['AudioStream'].read()
+    )
 
-
-## Atividade -> Parte 3 
-### Rota 6 -> Post /v3/tts
-
-Deverá ser criada a rota `/v3/tts` que receberá um post no formato abaixo:
-
-```json
-  {
-    "phrase": "converta esse texto para áudio e salve uma referencia no dynamoDB. Caso a referencia já exista me devolva a URL com audio já gerado"
-  }
+def saveReferenceOnDynamoDB(unique_id, phrase, file_name):
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('api-tts-references')
+    table.put_item(
+        Item={
+            'unique_id': unique_id,
+            'received_phrase': phrase,
+            'url_to_audio': f'https://api-tts-audio-storage.s3.amazonaws.com/{file_name}'
+        }
+    )
 ```
-- Deverá utilizar a lógica do hash para verificar se a frase já foi gerada anteriormente.
-- Caso o hash já exista no dynamo entregue o retorno conforme abaixo.
-- Caso não exista faça a geração do audio, grave no s3 e grave as referencias no dynamo conforme Parte 2
+### Deploy
 
 
-Resposta a ser entregue:
-
-```json
-  {
-    "received_phrase": "converta esse texto para áudio",
-    "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
-    "created_audio": "02-02-2023 17:00:00",
-    "unique_id": "123456"
-  }
-```
-
-Dessa maneira essa será a arquitetura a ser impantada:
-
-![post-v3-tts](./assets/post-v3-tts.png)
-
-***
-
-## Observações retorno esperado
-
-- os campos de entrada e saida deverão estar nos formatos e com os nomes apresentados.
-- status code para sucesso da requisição será `200`
-- status code para erros deverá ser `500`
-
-
-***
-
-## O que será avaliado?
-
-- Projeto em produção na AWS
-- Em python conforme projeto base disponibilizado
-- Seguir as atividades na ordem proposta
-- Sobre as rotas: 
-  - Possuir em cada rota os retornos esperados (somente campos solicitados conforme especificação)
-- Organização geral do código fonte
-  - Estrutura de pastas
-  - Estrutura da logica de negócio
-  - Divisão de responsabilidades em arquivos/pastas distintos
-  - Otimização do código fonte (evitar duplicações de código)
-- Objetividade do README.md 
-
-***
-
-## Entrega
-
-- Aceitar o convite do repositório da sprint-6-pb-aws-ifce;
-- **O trabalho deve ser feito em grupos de quatro pessoas**;
-  - Evitar repetições de grupos da sprint anterior;
-- Criar uma branch no repositório com o formato grupo-número (Exemplo: grupo-1);
-- Subir o trabalho na branch com um [Readme.md](README.md) 
-  - documentar detalhes sobre como a avaliação foi desenvolvida
-  - dificuldades conhecidas
-  - como utilizar o sistema
-  - 🔨 código fonte desenvolvido (Sugestão: pasta `src`)
-- O prazo de entrega é até às 12h do dia 13/02/2023 no repositório do github ([https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce](https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce)).
