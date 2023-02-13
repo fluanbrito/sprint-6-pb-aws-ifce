@@ -24,6 +24,12 @@ functions:
       - httpApi:
           path: /v2
           method: get
+  v3_form:
+    handler: handlers/v3.v3_form
+    events:
+      - httpApi:
+          path: /v3
+          method: get
   v1_tts:
     handler: handlers/v1.v1_tts
     events:
@@ -35,4 +41,10 @@ functions:
     events:
       - httpApi:
           path: /v2/tts
+          method: post
+  v3_tts:
+    handler: handlers/v3.v3_tts
+    events:
+      - httpApi:
+          path: /v3/tts
           method: post

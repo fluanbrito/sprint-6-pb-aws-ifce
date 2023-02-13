@@ -5,8 +5,8 @@ import json
 import datetime
 
 
-def v2_form(event, context):
-    with open("templates/v2.html", "r") as file:
+def v3_form(event, context):
+    with open("templates/v3.html", "r") as file:
         content = file.read()
         return {
             'statusCode': 200,
@@ -16,7 +16,7 @@ def v2_form(event, context):
             }
         }
 
-def v2_tts(event, context):
+def v3_tts(event, context):
     try:
         # recebe a frase do formulário
         body = event['body']
@@ -32,6 +32,20 @@ def v2_tts(event, context):
         # gera o id unico para a frase
         unique_id = hashlib.sha256(phrase.encode()).hexdigest()[:6]
         print(unique_id)
+        
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table('api-tts-references')
+
+        response = table.get_item(Key={'unique_id': unique_id})
+        # verifica a existencia do item na tabela
+        if 'Item' in response:
+            item = response['Item']
+            print(f'{unique_id} já existe no DynamoDB')
+            return {
+                'received_phrase': item['received_phrase'],
+                'url_to_audio': item['url_to_audio'],
+                'unique_id': item['unique_id']
+            }
         
         # gera o audio usando o polly
         polly = boto3.client('polly')
@@ -51,6 +65,7 @@ def v2_tts(event, context):
             Key=file_name,
             Body=response['AudioStream'].read()
         )
+        print("objeto armazenado")
         
         # formatação da data
         date_string = response['ResponseMetadata']['HTTPHeaders']['date']
@@ -58,8 +73,6 @@ def v2_tts(event, context):
         formatted_date = date_object.strftime('%d-%m-%Y %H:%M:%S')
         
         # salva uma referencia no dynamoDB
-        dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table('api-tts-references')
         table.put_item(
             Item={
                 'unique_id': unique_id,
