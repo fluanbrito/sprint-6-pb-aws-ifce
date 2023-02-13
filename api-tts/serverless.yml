@@ -30,3 +30,9 @@ functions:
       - http:
           path: v1/tts
           method: post
+  v2_tts:
+    handler: routers/rota2.v2_tts
+    events:
+      - http:
+          path: v2/tts
+          method: post
