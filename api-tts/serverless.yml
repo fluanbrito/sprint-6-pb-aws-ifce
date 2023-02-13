@@ -36,3 +36,9 @@ functions:
       - http:
           path: v2/tts
           method: post
+  v3_tts:
+    handler: routers/rota3.v3_tts
+    events:
+      - http:
+          path: v3/tts
+          method: post
