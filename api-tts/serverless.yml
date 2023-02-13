@@ -9,27 +9,24 @@ functions:
   health:
     handler: handler.health
     events:
-      - http:
+      - httpApi:
           path: /
           method: get
   v1Description:
     handler: handler.v1_description
     events:
-      - http:
+      - httpApi:
           path: /v1
           method: get
   v2Description:
     handler: handler.v2_description
     events:
-      - http:
+      - httpApi:
           path: /v2
           method: get
   v1_tts:
     handler: v1.v1_tts
     events:
-      - http:
+      - httpApi:
           path: /v1/tts
           method: post
-          cors: true
-
-

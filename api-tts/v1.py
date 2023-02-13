@@ -7,7 +7,7 @@ from datetime import datetime
 
 def v1_tts(event, context):
     try:
-        postId = str(uuid.uuid4())
+        identificador = str(uuid.uuid4())
         text = event["phrase"]
 
         with open("../.config/credentials.json", "r") as file:
@@ -24,7 +24,7 @@ def v1_tts(event, context):
             VoiceId="Camila"
         )
 
-        nome_arquivo = postId+".mp3"
+        nome_arquivo = identificador+".mp3"
         s3 = boto3.client('s3')
 
         s3.put_object(Key=nome_arquivo,
@@ -34,7 +34,7 @@ def v1_tts(event, context):
         url = "https://" \
             + str(os.environ['BUCKET_NAME']) \
             + ".s3.amazonaws.com/" \
-            + str(postId) \
+            + str(identificador) \
             + ".mp3"
 
         return {
@@ -48,5 +48,5 @@ def v1_tts(event, context):
     except Exception as err:
         return {
             "status": 500,
-            "error ": err
+            "error" : err
         }
