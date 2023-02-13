@@ -12,6 +12,12 @@ provider:
 
 #Configuração função POST/Create
 functions:
+  rotaConvert-post:
+    handler: rotaV1.tts
+    events:
+      - httpApi:
+          path: /v1/tts
+          method: post
   rotaDynamoDB-post:
     handler: src/rotaV2.create
     environment: 
