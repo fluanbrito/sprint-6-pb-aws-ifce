@@ -1,10 +1,10 @@
+from templates.templates import main_page
+
 def index(event, context):
-    with open("./templates/index.html", "r") as file:
-        content = file.read()
-        return {
-            'statusCode': 200,
-            'body': content,
-            'headers': {
-                'Content-Type': 'text/html'
-            }
+    return {
+        'statusCode': 200,
+        'body': main_page(),
+        'headers': {
+            'Content-Type': 'text/html'
         }
+    }

@@ -3,18 +3,17 @@ import urllib.parse
 import hashlib
 import json
 import datetime
+from templates.templates import form
 
 
 def v3_form(event, context):
-    with open("templates/v3.html", "r") as file:
-        content = file.read()
-        return {
-            'statusCode': 200,
-            'body': content,
-            'headers': {
-                'Content-Type': 'text/html'
-            }
+    return {
+        'statusCode': 200,
+        'body': form('/v3/tts', 'V3 - Armazenamento no S3 e DynamoDB (verifica a existência do item)'),
+        'headers': {
+            'Content-Type': 'text/html'
         }
+    }
 
 def v3_tts(event, context):
     try:

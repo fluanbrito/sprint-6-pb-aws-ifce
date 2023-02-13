@@ -2,18 +2,17 @@ import boto3
 import urllib.parse
 import json
 import datetime
+from templates.templates import form
 
 
 def v1_form(event, context):
-    with open("templates/v1.html", "r") as file:
-        content = file.read()
-        return {
-            'statusCode': 200,
-            'body': content,
-            'headers': {
-                'Content-Type': 'text/html'
-            }
+    return {
+        'statusCode': 200,
+        'body': form('/v1/tts', 'V1 - Armazenamento no S3'),
+        'headers': {
+            'Content-Type': 'text/html'
         }
+    }
 
 def v1_tts(event, context):
     try: 
