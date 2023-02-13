@@ -1,10 +1,9 @@
-import boto3
-import urllib.parse
-import hashlib
-import json
-import datetime
-from templates.templates import form
+from templates.form import form
+from functions.aws_services import *
+from functions.helpers import *
 
+import boto3
+import json
 
 def v3_form(event, context):
     return {
@@ -17,20 +16,9 @@ def v3_form(event, context):
 
 def v3_tts(event, context):
     try:
-        # recebe a frase do formulário
-        body = event['body']
-        parsed_body = urllib.parse.parse_qs(body)
-        phrase = parsed_body.get('phrase')[0]
-
-        # retirando caracteres de quebra de linha
-        if phrase.find("\r\n"):
-            phrase = phrase.replace("\r\n", "")
-
-        print(phrase)
+        phrase = getPhrase(event)
         
-        # gera o id unico para a frase
-        unique_id = hashlib.sha256(phrase.encode()).hexdigest()[:6]
-        print(unique_id)
+        unique_id = generateUniqueId(phrase)
         
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table('api-tts-references')
@@ -46,32 +34,14 @@ def v3_tts(event, context):
                 'unique_id': item['unique_id']
             }
         
-        # gera o audio usando o polly
-        polly = boto3.client('polly')
-        response = polly.synthesize_speech(
-            Text=phrase,
-            VoiceId='Vitoria',
-            OutputFormat='mp3'
-        )
+        polly_response = generateAudioWithPolly(phrase)
         
-        # formatação para o nome do arquivo e url
-        file_name = 'audio_' + unique_id + '.mp3'
+        file_name = generateFileName(unique_id)
         
-        # salva o audio no bucket
-        s3 = boto3.client('s3')
-        s3.put_object(
-            Bucket='api-tts-audio-storage',
-            Key=file_name,
-            Body=response['AudioStream'].read()
-        )
-        print("objeto armazenado")
+        storeAudioOnS3(file_name, polly_response)
         
-        # formatação da data
-        date_string = response['ResponseMetadata']['HTTPHeaders']['date']
-        date_object = datetime.datetime.strptime(date_string, '%a, %d %b %Y %H:%M:%S %Z')
-        formatted_date = date_object.strftime('%d-%m-%Y %H:%M:%S')
+        formatted_date = dateFormatting(polly_response)
         
-        # salva uma referencia no dynamoDB
         table.put_item(
             Item={
                 'unique_id': unique_id,
@@ -80,7 +50,6 @@ def v3_tts(event, context):
             }
         )
         
-        # retorna a resposta em json formatado
         return {
             'statusCode': 200,
             'headers': {

@@ -1,9 +1,8 @@
-import boto3
-import urllib.parse
-import json
-import datetime
-from templates.templates import form
+from templates.form import form
+from functions.aws_services import generateAudioWithPolly, storeAudioOnS3
+from functions.helpers import getPhrase, generateFileName, dateFormatting
 
+import json
 
 def v1_form(event, context):
     return {
@@ -16,42 +15,16 @@ def v1_form(event, context):
 
 def v1_tts(event, context):
     try: 
-        # recebe a frase do formulário
-        body = event['body']
-        parsed_body = urllib.parse.parse_qs(body)
-        phrase = parsed_body.get('phrase')[0]
+        phrase = getPhrase(event)
 
-        # retirando caracteres de quebra de linha
-        if phrase.find("\r\n"):
-            phrase = phrase.replace("\r\n", "")
+        polly_response = generateAudioWithPolly(phrase)
 
-        print(phrase)
+        file_name = generateFileName(phrase)
 
-        # gera o audio usando o polly
-        polly = boto3.client('polly')
-        response = polly.synthesize_speech(
-            Text=phrase,
-            VoiceId='Vitoria',
-            OutputFormat='mp3'
-        )
+        storeAudioOnS3(file_name, polly_response)
 
-        # formatação para o nome do arquivo e url
-        file_name = 'audio_' + phrase[:20].replace(" ", "_") + '.mp3'
+        formatted_date = dateFormatting(polly_response)
 
-        # salva o audio no bucket
-        s3 = boto3.client('s3')
-        s3.put_object(
-            Bucket='api-tts-audio-storage',
-            Key=file_name,
-            Body=response['AudioStream'].read()
-        )
-
-        # formatação da data
-        date_string = response['ResponseMetadata']['HTTPHeaders']['date']
-        date_object = datetime.datetime.strptime(date_string, '%a, %d %b %Y %H:%M:%S %Z')
-        formatted_date = date_object.strftime('%d-%m-%Y %H:%M:%S')
-
-        # retorna a resposta em json formatado
         return {
             'statusCode': 200,
             'headers': {

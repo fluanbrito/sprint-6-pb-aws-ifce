@@ -1,10 +1,8 @@
-import boto3
-import urllib.parse
-import hashlib
-import json
-import datetime
-from templates.templates import form
+from templates.form import form
+from functions.aws_services import *
+from functions.helpers import *
 
+import json
 
 def v2_form(event, context):
     return {
@@ -17,57 +15,20 @@ def v2_form(event, context):
 
 def v2_tts(event, context):
     try:
-        # recebe a frase do formulário
-        body = event['body']
-        parsed_body = urllib.parse.parse_qs(body)
-        phrase = parsed_body.get('phrase')[0]
+        phrase = getPhrase(event)
 
-        # retirando caracteres de quebra de linha
-        if phrase.find("\r\n"):
-            phrase = phrase.replace("\r\n", "")
+        unique_id = generateUniqueId(phrase)
 
-        print(phrase)
+        polly_response = generateAudioWithPolly(phrase)
+
+        file_name = generateFileName(unique_id)
+
+        storeAudioOnS3(file_name, polly_response)
+
+        formatted_date = dateFormatting(polly_response)
         
-        # gera o id unico para a frase
-        unique_id = hashlib.sha256(phrase.encode()).hexdigest()[:6]
-        print(unique_id)
+        saveReferenceOnDynamoDB(unique_id, phrase, file_name)
         
-        # gera o audio usando o polly
-        polly = boto3.client('polly')
-        response = polly.synthesize_speech(
-            Text=phrase,
-            VoiceId='Vitoria',
-            OutputFormat='mp3'
-        )
-        
-        # formatação para o nome do arquivo e url
-        file_name = 'audio_' + unique_id + '.mp3'
-        
-        # salva o audio no bucket
-        s3 = boto3.client('s3')
-        s3.put_object(
-            Bucket='api-tts-audio-storage',
-            Key=file_name,
-            Body=response['AudioStream'].read()
-        )
-        
-        # formatação da data
-        date_string = response['ResponseMetadata']['HTTPHeaders']['date']
-        date_object = datetime.datetime.strptime(date_string, '%a, %d %b %Y %H:%M:%S %Z')
-        formatted_date = date_object.strftime('%d-%m-%Y %H:%M:%S')
-        
-        # salva uma referencia no dynamoDB
-        dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table('api-tts-references')
-        table.put_item(
-            Item={
-                'unique_id': unique_id,
-                'received_phrase': phrase,
-                'url_to_audio': f'https://api-tts-audio-storage.s3.amazonaws.com/{file_name}'
-            }
-        )
-        
-        # retorna a resposta em json formatado
         return {
             'statusCode': 200,
             'headers': {

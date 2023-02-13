@@ -1,4 +1,4 @@
-from templates.templates import main_page
+from templates.main import main_page
 
 def index(event, context):
     return {
