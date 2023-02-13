@@ -25,12 +25,13 @@ def polly_to_s3(text):
         Key='polly-'+str(len(count))+'.mp3'
     )
 
-    url = s3.generate_presigned_url(
+    url= s3.generate_presigned_url(
     ClientMethod='get_object',
     Params={
         'Bucket': bucket,
         'Key': 'polly-'+str(len(count))+'.mp3'
     })
+    
 
     brasilia_offset = timedelta(hours=-3)
     brasilia_time = datetime.datetime.utcnow() + brasilia_offset

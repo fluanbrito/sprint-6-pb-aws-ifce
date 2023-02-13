@@ -20,9 +20,11 @@ def v1_tts(event, context):
                     "body": json_response
                 }
     else:
-        response = {
-                    "Error": 'Chave de acesso incorreta ou inexistente'
-                }
+        body = {
+        "Erro": "Chave de segurança incorreta ou inexistente, certifique-se se o seu JSON possui o campo key!"
+        }
+
+        response = {"statusCode": 500, "body": json.dumps(body)}
     
                 
 
