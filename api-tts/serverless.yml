@@ -11,12 +11,12 @@ provider:
     - Effect: Allow
       Action:
         - s3:PutObject
-      Resource: arn:aws:s3:::bucket-sprint6-edi/*
+      Resource: arn:aws:s3:::bucket-sprint6/*
     - Effect: Allow
       Action:
         - "dynamodb:PutItem"
         - "dynamodb:GetItem"
-      Resource: "arn:aws:dynamodb:us-east-1:533552573598:table/table-sprint6-edi"
+      Resource: arn:aws:dynamodb:us-east-1:528260343431:table/audio-data-sprint6
 functions:
   health:
     handler: handler.health
