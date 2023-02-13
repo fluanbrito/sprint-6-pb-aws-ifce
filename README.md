@@ -11,7 +11,7 @@
 
 - [📝 Organização do código](#-descrição-do-projeto)
 
-- [🖥 Captura de frase e converver em Audio MP3 via Polly(Rota 1 , Rota 2, Rota 3)](#%EF%B8%8F-captura-de-frase)
+- [🖥 Captura de frase e converter em Audio MP3 via Polly(Rota 1 , Rota 2, Rota 3)](#-captura-de-frase-e-converter-em-audio-mp3-via-polly)
 
 - [📤 Atividade - Parte 1(AWS Polly, Armazenamento S3, chamada da API)](#-cria%C3%A7%C3%A3o-atividade-parte1)
 
@@ -19,11 +19,11 @@
 
 - [📤 Atividade - Parte 3(Hash, AWS Polly, Armazenamento S3, DynamoDB)](#-cria%C3%A7%C3%A3o-atividade-parte3)
 
-- [⬇️ Desenvolvimento da API(Functions.py)](#%EF%B8%8F-desenvolvimento-api)
+- [⬇️ Desenvolvimento da API(Functions.py)](#-desenvolvimento-da-api)
 
 - [📤 Deploy](#deploy)
 
-- [📌 Considerações finais](#finais)
+- [📌 Considerações finais](#-considerações-finais)
 
 ## 📝 Descrição do projeto
 
@@ -305,6 +305,15 @@ Função em Python que se conecta ao AWS (Amazon Web Services), utilizando as bi
 
 ## 📤 Deploy
 
+O deploy é feito utilizando o comando:
+```bash
+serverless deploy
+```
+
+Em seguida será listado os links para cada endpoint e cada function, representado na imagem abaixo:
+![img](https://i.imgur.com/YMQKfcU.jpeg)
+
+Vale ressaltar que o GET ```/menu ``` é a rota que possui o HTML para intermediar as rotas criadas, com resultados conforme foram definidos para cada rota.
 
 <br>
 
