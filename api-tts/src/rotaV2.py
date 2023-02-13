@@ -4,6 +4,10 @@ import uuid
 import json
 import logging
 
+s3 = boto3.resource('s3')
+s3 = boto3.resource('s3')
+transcribe = boto3.client('transcribe')
+dynamodb = boto3.resource('dynamodb')
 
 #criação da tabela
 def get_dynamo_table():
@@ -15,26 +19,27 @@ def get_dynamo_table():
 #Modo create
 def create(event, context):
     body = event["body"]
+    try:
+        if ("frase" in body and "url" in body):
+            table = get_dynamo_table()
 
-    if ("frase" in body and "url" in body):
-        table = get_dynamo_table()
+            table.put_item(
+                Item={
+                    "id": str(uuid.uuid4()),
+                    "frase":  body["frase"],
+                    "url": body["url"],
+                }
+            )
+            body = {
+                "received_phrase": "converta esse texto para áudio",
+                "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
+                "created_audio": "02-02-2023 17:00:00",
+                "unique_id": "123456"
+                }
+            response = {"status": 200,
+                    "body": json.dumps(body)}
 
-        table.put_item(
-            Item={
-                "id":    str(uuid.uuid4()),
-                "frase":  body["frase"],
-                "url": body["url"],
-            }
-        )
-        body = {
-            "received_phrase": "converta esse texto para áudio",
-            "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
-            "created_audio": "02-02-2023 17:00:00",
-            "unique_id": "123456"
-            }
-        response = {"status": 200,
-                "body": json.dumps(body)}
-
-        return response
-    return {"status": 500,
-                "body": "Error"}
+            return response
+    except:
+        return {"status": 500,
+                    "body": "Error"}
