@@ -2,13 +2,14 @@ service: api-grupo-4-serverless
 
 custom: 
   stage: ${opt:stage, self:provider.stage}
-  rotaDynamoDBTable: dynamo-${self:custom.stage}-rotaV2-table
+  rotaV2: dynamo-${self:custom.stage}-contact-table
+  rotaV3: dynamo-${self:custom.stage}-contact-table
 
 provider:
   name: aws
   region: us-east-1
   runtime: python3.9
-  stage: routeV2
+  
 
 #Configuração função POST/Create
 functions:
@@ -18,7 +19,7 @@ functions:
       - httpApi:
           path: /v1/tts
           method: post
-  rotaDynamoDB-post:
+  rotaV2-post:
     handler: src/rotaV2.create
     environment: 
       TABLE: ${self:service}-${sls:stage}
@@ -36,16 +37,16 @@ functions:
        Statements:
          - Effect: Allow
            Action:
-             - dynamodb: PutItem #insert
-             - dynamodb: Scan #select
-             - dynamodb: Query
+             - 'dynamodb: PutItem' #insert
+             - 'dynamodb: Scan' #select
+             - 'dynamodb: Query'
 
            Resource:
              - !GetAtt rotaV2Table.Arn
 
 
 #Configuração função GET/Listar
-  rotaDynamoDB-get:
+  rotaV3-get:
     handler:  src/rotaV3.list
     environment:
       TABLE:  ${self:custom.rotaV3Table}
@@ -62,12 +63,14 @@ functions:
       - Effect: "Allow"
         Action:
           - 'dynamodb:Scan'
+          - 'dynamodb: PutItem' #insert
+          - 'dynamodb: Query'
         Resource:
           - !GetAtt rotaV3.Arn
 
 resources:
   - Resources:
-     rotaDynamoDBTable:
+     rotaTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
         AttributeDefinitions:
@@ -77,7 +80,7 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
-        TableName: ${self:custom.rotaV3Table}  
+        TableName: ${self:custom.Table}  
 
 
 plugins:
