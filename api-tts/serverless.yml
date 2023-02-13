@@ -24,6 +24,12 @@ functions:
       - httpApi:
           path: /v2
           method: get
+  rotaConvert-post:
+    handler: src/rotaV1.tts
+    events:
+      - httpApi:
+          path: /v1/tts
+          method: post
 
 #Configuração DynamoDB
 
