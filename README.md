@@ -19,7 +19,7 @@
 
 - [📤 Atividade - Parte 3(Hash, AWS Polly, Armazenamento S3, DynamoDB)](#-cria%C3%A7%C3%A3o-atividade-parte3)
 
-- [⬇️ Desenvolvimento da API](#%EF%B8%8F-desenvolvimento-api)
+- [⬇️ Desenvolvimento da API(Functions.py)](#%EF%B8%8F-desenvolvimento-api)
 
 - [📤 Deploy](#deploy)
 
@@ -58,31 +58,41 @@ Com base nas atividades anteriores realizadas, foi criado uma página html que i
 <br>
 
 - Visual Studio Code
-- Amazon Web Services(AWS Polly, S3, Dynamo DB, Lambda)
+- Amazon Web Services(AWS Polly, S3, Dynamo DB, Lambda, Serverless)
 - Python
 - HTML, CSS
-- JavaScript
 
 <hr>
 <br>
 
 ## 😌 Impedimentos Resolvidos
 
+- Interpretação inicial da construção, organização do código como também de sua arquitetura.
+- Construção das rotas, como também a sua "successfully executed", cada rota haviam erros que foram resolvidos após estudo e pequisa.
+- Dificuldade na utilização dos serviços da AWS, descobrimento de funções e atribuições no código.
+- Criação das funções e com quais bibliotecas seria trabalhado, houve momentos que foi debatido a utilização de Flask, por exemplo.
+
 <hr>
 <br>
 
 ## 📝 Organização do Código
 
+![img](https://i.imgur.com/KuHHUi8.png)
+
+Acima é o demonstrativo de como foi organizado o projeto e subdivido em pastas conforme era a atuação do código.
+
+A organização do código ajudou a evitar erros e bugs, uma vez que as partes do código estão claramente separadas e identificadas. Ela também facilitou a implementação de novas funcionalidades e a resolução de problemas, pois se tornou mais fácil localizar e corrigir o código relevante. 
+
+Em resumo, a organização do código foi fundamental para o sucesso do projeto, pois tornou o processo de desenvolvimento mais eficiente e efetivo.
 <hr>
 <br>
 
 ## 🖥 Captura de frase e converver em Audio MP3 via Polly(Rota 1 , Rota 2, Rota 3)
 
-```
-import boto3
+```bash
 import json
 from datetime import datetime
-from io import BytesIO
+from utils import functions
 
 def health(event, context):
     body = {
@@ -115,6 +125,7 @@ def v2_description(event, context):
     body = {
         "message": "TTS api version 2."
     }
+
     response = {
         "statusCode": 200,
         "headers": {
@@ -122,6 +133,7 @@ def v2_description(event, context):
         },
         "body": json.dumps(body)
     }
+
     return response
 ```
 Este é o código em Python para a API de geração de voz utilizando a Amazon Polly. A API tem três versões (v1, v2, v3) e cada uma das versões tem seu próprio endpoint para receber requisições.
@@ -137,179 +149,157 @@ A função v2_description retorna a mensagem "TTS api version 2." em formato JSO
 
 ## 📤 Atividade - Parte 1(AWS Polly, Armazenamento S3, chamada da API)
 
-```
+```bash
 def v1_tts(event, context):
-    phrase = event['phrase']
-    s3 = boto3.client('s3')
-    polly = boto3.client('polly')
-    response = polly.synthesize_speech(
-        OutputFormat='mp3',
-        Text=phrase,
-        VoiceId='Joanna'
-    )
-    audio = response['AudioStream'].read()
+    
+    bibliotecas = functions.bibliotecas()
+    dados = functions.dados(event, bibliotecas[2])
+    functions.gerar_audio(dados[1], dados[4], dados[5], bibliotecas[0], bibliotecas[1])
 
-    filename = "audio-xyz.mp3"
-    s3.put_object(
-        Bucket='bucket-sprint6',
-        Key=filename,
-        Body=audio,
-    )
-
-    return {
-        "received_phrase": phrase,
-        "url_to_audio": f"https://bucket-sprint6.s3.amazonaws.com/{filename}",
-        "created_audio": str(datetime.now())
-    }
+    return functions.retorno(dados[1], '', dados[4], dados[5])
 ```
 
-A função v1_tts recebe uma frase como entrada na requisição e usa a Amazon Polly para converter a frase em um arquivo de áudio MP3. Em seguida, o arquivo de áudio é salvo no Amazon S3 e a URL para o arquivo de áudio é retornada como resposta da API.
+A função v1_tts começa carregando as bibliotecas necessárias para sua execução, fazendo uma chamada para a função "bibliotecas". Em seguida, faz uma chamada para a função "dados", passando como argumentos "event" e "bibliotecas[2]". Essa função retorna dados que são armazenados na variável "dados".
+
+Em resumo, é responsável por gerar áudios a partir de texto, carregar as bibliotecas necessárias, obter os dados de entrada, gerar o áudio e retornar o resultado da operação.
 
 <hr>
 <br>
 
 ## 📤 Atividade - Parte 2(Hash, AWS Polly, Armazenamento S3, DynamoDB, Chamada API)
 
-```
+```bash
 def v2_tts(event, context):
-    phrase = event['phrase']
-    s3 = boto3.client('s3')
-    polly = boto3.client('polly')
-    response = polly.synthesize_speech(
-        OutputFormat='mp3',
-        Text=phrase,
-        VoiceId='Joanna'
-    )
+    
+    bibliotecas = functions.bibliotecas()
+    dados = functions.dados(event, bibliotecas[2])
+    functions.gerar_audio(dados[1], dados[4], dados[5], bibliotecas[0], bibliotecas[1])
+    functions.audio_dynamo(dados[1], dados[2], dados[3], dados[4], dados[5])
 
-    audio = response['AudioStream'].read()
-
-    filename = "audio-xyz.mp3"
-    s3.put_object(
-        Bucket='bucket-sprint6',
-        Key=filename,
-        Body=audio,
-    )
-
-    hash_frase = str(hash(phrase))[1:len(phrase)]
-
-    db = boto3.resource('dynamodb')
-    table = db.Table("audio-data-sprint6")
-
-    table.put_item(
-        Item={
-        'hash': hash_frase,
-        'frase': phrase,
-        'url':f"https://bucket-sprint6.s3.amazonaws.com/{filename}"
-        }
-    )
-    return {
-        "received_phrase": phrase,
-        "url_to_audio": f"https://bucket-sprint6.s3.amazonaws.com/{filename}",
-        "created_audio": str(datetime.now()),
-        "unique_id": hash_frase
-    }
+    return functions.retorno(dados[1], dados[3], dados[4], dados[5])
 ```
 
-A função v2_tts funciona de maneira semelhante à função v1_tts, mas também gera uma hash para a frase e salva a frase, a URL do arquivo de áudio e a hash em uma tabela no Amazon DynamoDB.
+A função v2_tts primeiro importa bibliotecas necessárias e obtém dados relevantes a partir do evento passado como argumento. Em seguida, a função gera o áudio TTS e armazena o resultado em um banco de dados. Por fim, a função retorna um resultado com informações sobre a geração do áudio.
 
 <hr>
 <br>
 
 ## 📤 Atividade - Parte 3(Hash, AWS Polly, Armazenamento S3, DynamoDB)
-```
+```bash
 def v3_tts(event, context):
-    phrase = event['phrase']
-    s3 = boto3.client('s3')
-    polly = boto3.client('polly')
-    response = polly.synthesize_speech(
-        OutputFormat='mp3',
-        Text=phrase,
-        VoiceId='Joanna'
-    )
     
-    audio = response['AudioStream'].read()
+    bibliotecas = functions.bibliotecas()
+    dados = functions.dados(event, bibliotecas[2])
+    busca_dynamo = functions.busca_dynamo(dados[2], dados[3])
 
-    filename = "audio-xyz.mp3"
-    s3.put_object(
-        Bucket='bucket-sprint6',
-        Key=filename,
-        Body=audio,
-    )
-    return {
-        "received_phrase": phrase,
-        "url_to_audio": f"https://bucket-sprint6.s3.amazonaws.com/{filename}",
-        "created_audio": str(datetime.now())
-    }
+    if busca_dynamo is None:
+        functions.gerar_audio(dados[1], dados[4], dados[5], bibliotecas[0], bibliotecas[1])
+        functions.audio_dynamo(dados[1], dados[2], dados[3], dados[4], dados[5])
+
+        return functions.retorno(dados[1], dados[3], dados[4], dados[5])
+        
+    else:
+        return functions.retorno(dados[1], dados[3], dados[4], dados[5])
 ```
-A função v3_tts é similar à função v1_tts, mas não possui nenhuma funcionalidade adicional.
+A função v3_tts começa importando as bibliotecas necessárias a partir de outra função functions.bibliotecas(). Em seguida, obtém os dados relevantes para a geração do áudio, utilizando a função functions.dados(event, bibliotecas[2]). Em seguida, a função functions.busca_dynamo(dados[2], dados[3]) é usada para verificar se o áudio já foi gerado previamente e armazenado.
+
+Se o áudio ainda não foi gerado, então a função functions.gerar_audio(dados[1], dados[4], dados[5], bibliotecas[0], bibliotecas[1]) é chamada para gerar o áudio e a função functions.audio_dynamo(dados[1], dados[2], dados[3], dados[4], dados[5]) é chamada para armazená-lo. Finalmente, a função functions.retorno(dados[1], dados[3], dados[4], dados[5]) é chamada para retornar os dados relevantes para a geração do áudio.
+
+Se o áudio já foi gerado e armazenado, então apenas a função functions.retorno(dados[1], dados[3], dados[4], dados[5]) é chamada para retornar os dados relevantes para a geração do áudio, sem a necessidade de gerar o áudio novamente.
 
 <hr>
 <br>
 
-## ⬇️ Desenvolvimento da API
+## ⬇️ Desenvolvimento da API(Functions.py)
+```bash
+import boto3
+import json
+import inspect
+from datetime import datetime
+
+def dados(event, db):
+    payload = json.loads(event["body"])
+    phrase = payload["phrase"]
+
+    hash_frase = str(hash(phrase))[1:len(phrase)]
+    filename = f"{hash_frase}.mp3"
+    bucket = "bucket-sprint6"
+    table = db.Table("audio-data-sprint6")
+    
+    return payload, phrase, table, hash_frase, filename, bucket
+
+def bibliotecas():
+
+    s3 = boto3.client('s3')
+    polly = boto3.client('polly', region_name='us-east-1')
+    db = boto3.resource('dynamodb')
+
+    return s3, polly, db
+
+def gerar_audio(phrase, filename, bucket, s3, polly):
+
+    response = polly.synthesize_speech(
+        OutputFormat='mp3',
+        Text=phrase,
+        VoiceId='Camila'
+    )
+    audio = response['AudioStream'].read()
+
+    s3.put_object(
+        Bucket=bucket,
+        Key=filename,
+        Body=audio,
+    )
+
+def audio_dynamo(phrase, table, hash_frase, filename, bucket):
+
+    table.put_item(
+        Item={
+        'hash': hash_frase,
+        'frase': phrase,
+        'url':f"https://{bucket}.s3.amazonaws.com/{filename}"
+        }
+    )
+
+def retorno(phrase, hash_frase, filename, bucket):
+
+    stack = inspect.stack()
+    caller = stack[1]
+    
+    if (caller.function == 'v1_tts'):
+        return {
+            "received_phrase": phrase,
+            "url_to_audio": f"https://{bucket}.s3.amazonaws.com/{filename}",
+            "created_audio": str(datetime.now())
+        }
+
+    else:
+        return {
+            "received_phrase": phrase,
+            "url_to_audio": f"https://{bucket}.s3.amazonaws.com/{filename}",
+            "created_audio": str(datetime.now()),
+            "unique_id": hash_frase
+        }
+
+def busca_dynamo(table, hash_frase):
+
+    response = table.get_item(Key={'hash': hash_frase})
+    item = response.get("Item")
+
+    return item
 ```
-from flask import Flask, render_template, flash, redirect, request, jsonify
-import os
-from handler import *
-
-app = Flask(__name__)
-
-@app.route('/')
-def index():
-    return health('','')
-@app.route('/v1')
-def v1_get():
-    return v1_description('', '')
-@app.route('/v2')
-def v2_get():
-    return v2_description('', '')
-
-@app.route('/v1/tts', methods=['GET', 'POST'])
-def v1_post():
-    if request.method == 'GET':
-        return render_template("index.html")
-    else:
-        frase = {
-            "phrase": request.form.get("textov1")
-        }
-        return v1_tts(frase, '')
-
-@app.route('/v2/tts', methods=['GET','POST'])
-def v2_post():
-    if request.method == 'GET':
-        return render_template("index.html")
-    else:
-        frase = {
-            "phrase": request.form.get("textov2")
-        }
-        return v2_tts(frase, '')
-
-@app.route('/v3/tts', methods=['GET','POST'])
-def v3_post():
-    if request.method == 'GET':
-        return render_template("index.html")
-    else:
-        frase = {
-            "phrase": request.form.get("textov3")
-        }
-        return v2_tts(frase, '')
-```
 
 
-A API em Python cria uma aplicação web usando o framework Flask.
+Função em Python que se conecta ao AWS (Amazon Web Services), utilizando as bibliotecas Boto3. Ela realiza as seguintes tarefas:
 
-A aplicação tem as seguintes rotas:
-
-- '/': retorna o resultado da chamada à função "health"
-- '/v1': retorna o resultado da chamada à função "v1_description"
-- '/v2': retorna o resultado da chamada à função "v2_description"
-- '/v1/tts': retorna o resultado da chamada à função "v1_tts". Este é um recurso que permite enviar uma solicitação POST que inclui um formulário de texto. O conteúdo do formulário é enviado como uma frase que é passada como um dicionário à função "v1_tts". Se for uma solicitação GET, será renderizada a página "index.html".
-- '/v2/tts': funciona de forma semelhante à rota '/v1/tts', mas chama a função "v2_tts" em vez de "v1_tts".
-- '/v3/tts': funciona de forma semelhante à rota '/v2/tts', mas chama a função "v2_tts" em vez de "v3_tts".
-
-As funções "health", "v1_description", "v2_description", "v1_tts" e "v2_tts" são importadas do módulo "handler".
-
-A aplicação é iniciada com o comando "app.run(debug=True)" é a porta para a qual a aplicação deve escutar é definida como "5000" ou a porta especificada na variável de ambiente "PORT".
+- Lê o evento enviado por uma requisição e extrai a frase
+- Gera um hash aleatório para a frase e monta o nome do arquivo de áudio MP3
+- Inicializa as bibliotecas de S3 (Armazenamento na Nuvem), Polly (Text-to-Speech) e DynamoDB (Banco de Dados NoSQL)
+- Gera o áudio MP3 baseado na frase usando a voz "Camila" da biblioteca Polly
+- Armazena o áudio gerado no S3
+- Insere na tabela do DynamoDB a frase, URL do áudio e hash da frase
+- Retorna a frase, URL do áudio, data de criação e (opcionalmente) a hash da frase em um objeto JSON
+- Busca na tabela do DynamoDB por uma hash idêntica à gerada pela frase. Se encontrada, retorna o item já existente na tabela.
 <hr>
 <br>
 
@@ -322,10 +312,10 @@ A aplicação é iniciada com o comando "app.run(debug=True)" é a porta para a 
 <hr>
 
 ## ♾️ Equipe
-- Davi Santos
-- Edivalço Araújo
-- Luan Ferreira
-- Nicolas
+- [Davi Santos](https://github.com/davi222-santos)
+- [Edivalço Araújo](https://github.com/EdivalcoAraujo)
+- [Luan Ferreira](https://github.com/fluanbrito)
+- [Nicolas](https://github.com/Niccofs)
 
 
 <br>
