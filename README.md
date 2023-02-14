@@ -1,252 +1,36 @@
-# Avaliação Sprint 6 - Programa de Bolsas Compass.uol / AWS e IFCE
+# Avaliação Sprint 6 - Programa de Bolsas Compass UOL / AWS e IFCE
 
-Avaliação da sexta sprint do programa de bolsas Compass.uol para formação em machine learning para AWS.
+[![N|Solid](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/LogoCompasso-positivo.png/440px-LogoCompasso-positivo.png)](https://compass.uol/pt/home/)
 
-***
 
-## Execução (Código Fonte)
+## Objetivos
 
-Com base nas atividades anteriores realizadas, crie uma página html que irá capturar uma frase qualquer inserida pelo usuário e transformará essa frase em um audio em mp3 via polly.
+1 - Criar uma página html que irá capturar uma frase qualquer inserida pelo usuário e transformará essa frase em um audio em mp3 via polly.
 
+2 - Instalar o framework serverless em seu computador (A aplicação deverá ser desenvolvida com o mesmo). Mais informações [aqui](https://www.serverless.com/framework/docs/getting-started).
 
-**Especificações**:
+3 - Gerar suas credenciais (AWS Acess Key e AWS Secret) na console AWS pelo IAM. Mais informações [aqui](https://www.serverless.com/framework/docs/providers/aws/guide/credentials/).
 
-A aplicação deverá ser desenvolvida com o framework 'serverless' e deverá seguir a estrutura que já foi desenvolvida neste repo.
+4 - Implantar a solução na AWS.
 
-Passo a passo para iniciar o projeto:
-1. Crie a branch para o seu grupo e efetue o clone
+## Ferramentas / plataformas utilizadas
 
-2. Instale o framework serverless em seu computador. Mais informações [aqui](https://www.serverless.com/framework/docs/getting-started)
-```json
-npm install -g serverless
-```
+* Visual Studio Code (VS Code)
+* Amazon Web Services (AWS-Lambda, Polly, S3, DynamoDB)
+* Python
+* Github
 
+## Atividade - Parte 1 (transformando uma frase em áudio via AWS Polly)
 
-3. Gere suas credenciais (AWS Acess Key e AWS Secret) na console AWS pelo IAM. Mais informações [aqui](https://www.serverless.com/framework/docs/providers/aws/guide/credentials/)
+## Atividade - Parte 2 (atribuindo um ID único no DynamoBD)
 
-4. Em seguida insira as credenciais e execute o comando conforme exemplo:
+## Atividade - Parte 3 (verificação por ID no DynamoDB)
 
-```json
-serverless config credentials \
-  --provider aws \
-  --key AKIAIOSFODNN7EXAMPLE \
-  --secret wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-  ```
+## Deploy
 
-Também é possivel configurar via [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) executando o comando:
+## Autores
 
-```json
-$ aws configure
-AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
-AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-Default region name [None]: us-east-1
-Default output format [None]: ENTER
-  ```
-
-#### Observação
-As credenciais devem ficar apenas localmente no seu ambiente. Nunca exponha as crendenciais no Readme ou qualquer outro ponto do codigo.
-
-Após executar as instruções acima, o serverless estará pronto para ser utilizado e poderemos publicar a solução na AWS.
-
-5. Para efetuar o deploy da solução na sua conta aws execute (acesse a pasta `api-tts`):
-```
-$ serverless deploy
-```
-Depois de efetuar o deploy, vocẽ terá um retorno parecido com isso:
-
-```bash
-Deploying api-tts to stage dev (us-east-1)
-
-Service deployed to stack api-tts-dev (85s)
-
-endpoints:
-  GET - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/
-  GET - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/v1
-  GET - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/v2
-functions:
-  health: api-tts-dev-health (2.1 kB)
-  v1Description: api-tts-dev-v1Description (2.1 kB)
-  v2Description: api-tts-dev-v2Description (2.1 kB)
-```
-6. Abra o browser e confirme que a solução está funcionando colando os 3 endpoints que deixamos como exemplo:
-
-### Rota 1 → Get /
-
-1. Esta rota já está presente no projeto
-2. O retorno rota é:
-```json
-  {
-    "message": "Go Serverless v3.0! Your function executed successfully!",
-    "input": { 
-        ...(event)
-      }
-  }
-```
-3. Status code para sucesso da requisição será `200`
-
-### Rota 2 → Get /v1
-
-1. Esta rota já está presente no projeto
-2. O retorno rota é:
-```json
-  {
-    "message": "TTS api version 1."
-  }
- 
-```
-3. Status code para sucesso da requisição será `200`
-
-### Rota 3 → Get /v2
-1. Esta rota já está presente no projeto
-2. O retorno rota é:
-```json
-  {
-    "message": "TTS api version 2."
-  }
- 
-```
-***
-
-Após conseguir rodar o projeto base o objetivo final será divida em duas partes:
-
-## Atividade -> Parte 1 
-### Rota 4 -> Post /v1/tts
-
-Deverá ser criada a rota `/v1/tts` que receberá um post no formato abaixo:
-
-```json
-  {
-    "phrase": "converta esse texto para áudio"
-  }
-```
-- Essa frase recebida deverá ser transformada em áudio via AWS Polly
-- Deverá ser armazenada em um S3 (Que deverá ser público, apenas para a nossa avaliação)
-- A resposta da chamada da API deverá constar o endereço do audio gerado no S3
-
-Resposta a ser entregue:
-
-```json
-  {
-    "received_phrase": "converta esse texto para áudio",
-    "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
-    "created_audio": "02-02-2023 17:00:00"
-  }
-```
-
-Dessa maneira essa será a arquitetura a ser impantada:
-
-![post-v1-tts](./assets/post-v1-tts.png)
-
-
-Exemplos de referência:
-  - https://github.com/SC5/serverless-blog-to-podcast (JS) 
-  - https://github.com/hussainanjar/polly-lambda (Python)
-
-## Atividade -> Parte 2 
-### Rota 5 -> Post /v2/tts
-
-Deverá ser criada a rota `/v2/tts` que receberá um post no formato abaixo:
-
-```json
-  {
-    "phrase": "converta esse texto para áudio e salve uma referencia no dynamoDB"
-  }
-```
-- Deverá ser criada uma lógica para que essa frase recebida seja um id unico (um hash).
-- Esse hash será o principal atributo em nosso dynamo db
-Exemplo: "Teste 123" será sempre o id "123456"
-- Com essa frase recebida deverá ser transformada em áudio via AWS Polly
-- Deverá ser armazenada em um S3 (Que deverá ser público, apenas para a nossa avaliação)
-- Deverá ser salva uma referencia no dynamoBD com as seguintes informações: id, frase e url do s3
-- A resposta da chamada da API deverá constar o endereço do audio gerado no S3
-
-Resposta a ser entregue:
-
-```json
-  {
-    "received_phrase": "converta esse texto para áudio",
-    "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
-    "created_audio": "02-02-2023 17:00:00",
-    "unique_id": "123456"
-    
-  }
-```
-
-Dessa maneira essa será a arquitetura a ser impantada:
-
-![post-v2-tts](./assets/post-v2-tts.png)
-
-
-Exemplos de referência com inserção no dynamoDb:
-  -  https://github.com/serverless/examples/tree/v3/aws-python-http-api-with-dynamodb (Python)
-
-
-## Atividade -> Parte 3 
-### Rota 6 -> Post /v3/tts
-
-Deverá ser criada a rota `/v3/tts` que receberá um post no formato abaixo:
-
-```json
-  {
-    "phrase": "converta esse texto para áudio e salve uma referencia no dynamoDB. Caso a referencia já exista me devolva a URL com audio já gerado"
-  }
-```
-- Deverá utilizar a lógica do hash para verificar se a frase já foi gerada anteriormente.
-- Caso o hash já exista no dynamo entregue o retorno conforme abaixo.
-- Caso não exista faça a geração do audio, grave no s3 e grave as referencias no dynamo conforme Parte 2
-
-
-Resposta a ser entregue:
-
-```json
-  {
-    "received_phrase": "converta esse texto para áudio",
-    "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
-    "created_audio": "02-02-2023 17:00:00",
-    "unique_id": "123456"
-  }
-```
-
-Dessa maneira essa será a arquitetura a ser impantada:
-
-![post-v3-tts](./assets/post-v3-tts.png)
-
-***
-
-## Observações retorno esperado
-
-- os campos de entrada e saida deverão estar nos formatos e com os nomes apresentados.
-- status code para sucesso da requisição será `200`
-- status code para erros deverá ser `500`
-
-
-***
-
-## O que será avaliado?
-
-- Projeto em produção na AWS
-- Em python conforme projeto base disponibilizado
-- Seguir as atividades na ordem proposta
-- Sobre as rotas: 
-  - Possuir em cada rota os retornos esperados (somente campos solicitados conforme especificação)
-- Organização geral do código fonte
-  - Estrutura de pastas
-  - Estrutura da logica de negócio
-  - Divisão de responsabilidades em arquivos/pastas distintos
-  - Otimização do código fonte (evitar duplicações de código)
-- Objetividade do README.md 
-
-***
-
-## Entrega
-
-- Aceitar o convite do repositório da sprint-6-pb-aws-ifce;
-- **O trabalho deve ser feito em grupos de quatro pessoas**;
-  - Evitar repetições de grupos da sprint anterior;
-- Criar uma branch no repositório com o formato grupo-número (Exemplo: grupo-1);
-- Subir o trabalho na branch com um [Readme.md](README.md) 
-  - documentar detalhes sobre como a avaliação foi desenvolvida
-  - dificuldades conhecidas
-  - como utilizar o sistema
-  - 🔨 código fonte desenvolvido (Sugestão: pasta `src`)
-- O prazo de entrega é até às 12h do dia 13/02/2023 no repositório do github ([https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce](https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce)).
+* [@Humbert010](https://github.com/Humbert010)
+* [@JosianaSilva](https://github.com/JosianaSilva)
+* [@Rosemelry](https://github.com/Rosemelry)
+* [@Jeef-Moreira](https://github.com/Jeef-Moreira)
