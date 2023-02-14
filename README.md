@@ -7,13 +7,13 @@
 * [@Jhonatan Lobo](https://github.com/JhonatanLobo)
 * [@Tecla Fernandes](https://github.com/TeclaFernandes)
 
-### Recursos necessários
+# Recursos necessários
 
  - [Visual Studio Code](https://code.visualstudio.com/)
  - [Amazon Web Services](https://aws.amazon.com/pt/)
  - HTML
  - [Python](https://www.python.org/) 
-### Objetivos da Avaliação
+# Objetivos da Avaliação
 Construir uma aplicação que receba input's em uma página HTML, capture essa frase e faça a transformação dela para um arquivo de audio MP3 via polly, após isso retorne o arquivo de audio para o usuário.
 
 Passos do desenvolvimento da avaliação
@@ -22,17 +22,62 @@ Passos do desenvolvimento da avaliação
 * Execução (código fonte)
 * Deploy
 
-### Organização dos arquivos 
+# Organização dos arquivos 
+
+A imagem abaixo mostra commo está organizado o projeto e suas subdivisões.
 
 ![imagem arquivos](https://i.imgur.com/n9FVOry.jpg)
 
-* ### Construção da avaliação
+# Construção da avaliação
 Instalação framework serverless 
 ```
 npm install -g serverless
 ```
-#### Exemplos de códigos construidos 
-### main.py
+Em seguida foi gerado as credenciais na aws e configuradas com o seguinte código.
+
+```py
+serverless config credentials -o --provider aws --key {key} --secret {secret}
+```
+> **key** e **secret** são informados ao gerar as credenciais.
+
+Obs.: código todo na mesma linha pra evitar erro.
+
+# Códigos construidos
+## Captura e conversão da frase em audio via Polly
+
+O código permite a conversão do texto em audio pela AWS.
+
+```py
+def getPhrase(event):
+    body = event['body']
+    parsed_body = urllib.parse.parse_qs(body)
+    phrase = parsed_body.get('phrase')[0]
+
+    # retirando caracteres de quebra de linha
+    if phrase.find("\r\n"):
+        phrase = phrase.replace("\r\n", "")
+    
+    return phrase
+
+def generateFileName(phrase):
+    if len(phrase) > 6:
+        return 'audio_' + phrase[:20].replace(" ", "_") + '.mp3'
+        
+    return 'audio_' + phrase + '.mp3'
+
+def dateFormatting(response):
+    date_string = response['ResponseMetadata']['HTTPHeaders']['date']
+    date_object = datetime.datetime.strptime(date_string, '%a, %d %b %Y %H:%M:%S %Z')
+
+    return date_object.strftime('%d-%m-%Y %H:%M:%S')
+
+def generateUniqueId(phrase):
+    return hashlib.sha256(phrase.encode()).hexdigest()[:6]
+```
+
+---
+
+## main.py
 ``` 
 from templates.main import main_page
 
@@ -45,7 +90,8 @@ def index(event, context):
         }
     }
 ```
-### form 
+---
+## form 
 ```
 def main_page():
     return """
@@ -67,8 +113,11 @@ def main_page():
         </body>
         </html>
 ```
+---
+## Function v1
 
-### v1
+O código começa fazendo os imports nescessarios, em seguida pega os dados nescessarios a partir dos eventos passados como argumetos, gera os audios e retorna um arquivo JSON.
+
 ```
 from templates.form import form
 from functions.aws_services import generateAudioWithPolly, storeAudioOnS3
@@ -121,7 +170,13 @@ def v1_tts(event, context):
             })
         }
 ```
-### v2
+
+---
+
+## Function v2
+
+O código faz os imports nescessarios e coleta os dados significativos sobre os eventos passados como argumentos, após isso ela armazena no S3.AWS e DynamoDB, depois lhes retorna em resposta um JSON com as informações geradas.
+
 ```
 from templates.form import form
 from functions.aws_services import *
@@ -179,7 +234,13 @@ def v2_tts(event, context):
             })
         }
 ```
-### v3
+
+---
+
+## Function v3
+
+Por fim, após realizar os imports nescessarios, a função coleta os dados nescessarios para conseguir gerar o audio que foram armazenados no S3 e DynamoDB. Logo após, o código verifica a existencia do item na tabela, em caso positivo a função é chamada sem precisar fazer nenhuma outra ação para retornar os dados expressivos e em caso negativo é chamada novamente a função pra gerar e efetuar o armazenamento para assim retornar os dados eexpressivos.
+
 ```
 from templates.form import form
 from functions.aws_services import *
@@ -258,7 +319,10 @@ def v3_tts(event, context):
             })
         }
 ```
-### Functions 
+
+---
+
+## Functions 
 ```
 
 import boto3
@@ -291,6 +355,79 @@ def saveReferenceOnDynamoDB(unique_id, phrase, file_name):
         }
     )
 ```
-### Deploy
+---
+## Estrutura do serverless
 
+```py
+service: api-tts
+frameworkVersion: '3'
 
+provider:
+  name: aws
+  runtime: python3.9
+
+functions:
+  index:
+    handler: main.index
+    events:
+      - httpApi:
+          path: /
+          method: get
+  v1_form:
+    handler: handlers/v1.v1_form
+    events:
+      - httpApi:
+          path: /v1
+          method: get
+  v2_form:
+    handler: handlers/v2.v2_form
+    events:
+      - httpApi:
+          path: /v2
+          method: get
+  v3_form:
+    handler: handlers/v3.v3_form
+    events:
+      - httpApi:
+          path: /v3
+          method: get
+  v1_tts:
+    handler: handlers/v1.v1_tts
+    events:
+      - httpApi:
+          path: /v1/tts
+          method: post
+  v2_tts:
+    handler: handlers/v2.v2_tts
+    events:
+      - httpApi:
+          path: /v2/tts
+          method: post
+  v3_tts:
+    handler: handlers/v3.v3_tts
+    events:
+      - httpApi:
+          path: /v3/tts
+          method: post
+```
+
+> O **HANDLER** é ativada por um método Get que retorna na rota **/**
+
+> Os **v1_form**, **v2_form** e **v3_form** são acionados por um método Get que retornam na rota **/v1**, **/v2** e **/v3**
+
+>Os **v1_tts**, **v2_tts** e **v3_tts** são acionadas por um método Post que retornam na **/v1/tts**, **/v2/tts** e **/v1/tts**
+
+# Deploy
+
+Efetuando o deploy
+
+```py
+$ serverless deploy
+```
+
+Em seguida deve aparecer uma tela mais ou menos assim: 
+
+*[tela pós deploy]*
+
+# Dificuldades
+* Ao configurar pra receber o JSON
