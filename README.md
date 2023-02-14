@@ -24,7 +24,14 @@ Passos do desenvolvimento da avaliação
 
 # Organização dos arquivos 
 
-A imagem abaixo mostra commo está organizado o projeto e suas subdivisões.
+A imagem abaixo mostra como está organizado o projeto e suas subdivisões.
+
+Na pasta functions está localizada todas as funções como helpers e aws_services.
+
+Na pasta handlers estão as funções lambdas para as rotas /v1, /v2 e /v3
+
+Na pasta tampletes estão os demais arquivos como main e form.
+
 
 ![imagem arquivos](https://i.imgur.com/n9FVOry.jpg)
 
@@ -43,9 +50,7 @@ serverless config credentials -o --provider aws --key {key} --secret {secret}
 Obs.: código todo na mesma linha pra evitar erro.
 
 # Códigos construidos
-## Captura e conversão da frase em audio via Polly
-
-O código permite a conversão do texto em audio pela AWS.
+## Helpers
 
 ```py
 def getPhrase(event):
@@ -75,9 +80,10 @@ def generateUniqueId(phrase):
     return hashlib.sha256(phrase.encode()).hexdigest()[:6]
 ```
 
----
-
 ## main.py
+
+O main.py retorna o html da página inicial
+
 ``` 
 from templates.main import main_page
 
@@ -90,8 +96,11 @@ def index(event, context):
         }
     }
 ```
----
+
 ## form 
+
+O form.py retorna o html do formulário, recebendo como parâmetro o caminho pro post e o título.
+
 ```
 def main_page():
     return """
@@ -113,7 +122,7 @@ def main_page():
         </body>
         </html>
 ```
----
+
 ## Function v1
 
 O código começa fazendo os imports nescessarios, em seguida pega os dados nescessarios a partir dos eventos passados como argumetos, gera os audios e retorna um arquivo JSON.
@@ -170,8 +179,6 @@ def v1_tts(event, context):
             })
         }
 ```
-
----
 
 ## Function v2
 
@@ -234,8 +241,6 @@ def v2_tts(event, context):
             })
         }
 ```
-
----
 
 ## Function v3
 
@@ -320,11 +325,11 @@ def v3_tts(event, context):
         }
 ```
 
----
+## Functions
 
-## Functions 
+A function aws_services tem as funções de conexão/armazenamento com os serviços da aws.
+
 ```
-
 import boto3
 
 def generateAudioWithPolly(phrase):
@@ -355,7 +360,7 @@ def saveReferenceOnDynamoDB(unique_id, phrase, file_name):
         }
     )
 ```
----
+
 ## Estrutura do serverless
 
 ```py
@@ -411,7 +416,7 @@ functions:
           method: post
 ```
 
-> O **HANDLER** é ativada por um método Get que retorna na rota **/**
+> O **HANDLER** vai no arquivo main e usa a função index, que retorna na rota **/**
 
 > Os **v1_form**, **v2_form** e **v3_form** são acionados por um método Get que retornam na rota **/v1**, **/v2** e **/v3**
 
@@ -428,6 +433,3 @@ $ serverless deploy
 Em seguida deve aparecer uma tela mais ou menos assim: 
 
 *[tela pós deploy]*
-
-# Dificuldades
-* Ao configurar pra receber o JSON
