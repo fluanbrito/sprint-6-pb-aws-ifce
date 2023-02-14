@@ -121,4 +121,79 @@ O bloco de *functions* que definem o serviço de TTS, sendo elas:
 * **v1Description**, **v2Description**, e **v3Description** são acionadas por um GET para os endpoints **/v1**, **/v2**, **/v3** respectivamente.
 * Já as funções **v1_tts**, **v2_tts**, e **v3_tts** são ativadas pelo método POST para as rotas **/v1/tts**, **/v2/tts**, e **/v3/tts**.
 
+# Polly to S3
+Este script tem como objetivo criar um áudio utilizando a tecnologia Polly da Amazon Web Services (AWS) e armazenar esse áudio no serviço S3 também da AWS.
+
+## Funcionamento 
+O script recebe como entrada uma string que será utilizada para criar o áudio. A biblioteca boto3 é utilizada para se conectar à API Polly e criar o áudio, além de armazená-lo no S3.
+
+O arquivo de áudio é salvo com o nome "polly-X.mp3", onde X é o número de arquivos já presentes na pasta do bucket do S3. Além disso, é gerado um link de acesso público ao arquivo armazenado no S3.
+
+O script também retorna um objeto JSON com as informações da frase utilizada para criar o áudio, o link de acesso ao arquivo de áudio e a data e hora em que o arquivo foi criado.
+```sh
+import datetime
+import json
+from datetime import timedelta
+
+import boto3
+
+
+def polly_to_s3(text):
+    polly = boto3.client('polly')
+    s3 = boto3.client('s3')
+
+    bucket = 'polly-spint6'
+    result = s3.list_objects(Bucket=bucket)
+    count = result.get('Contents', [])
+
+    response = polly.synthesize_speech(
+        VoiceId='Ricardo',
+        OutputFormat='mp3',
+        Text=str(text)
+    )
+
+    s3.put_object(
+        Body=response['AudioStream'].read(),
+        Bucket='polly-spint6',
+        Key='polly-'+str(len(count))+'.mp3'
+    )
+
+    url= s3.generate_presigned_url(
+    ClientMethod='get_object',
+    Params={
+        'Bucket': bucket,
+        'Key': 'polly-'+str(len(count))+'.mp3'
+    })
+    
+
+    brasilia_offset = timedelta(hours=-3)
+    brasilia_time = datetime.datetime.utcnow() + brasilia_offset
+    formatted_time = brasilia_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    dados = {
+        "received_phrase": str(text),
+        "url_to_audio": url,
+        "created_audio": formatted_time
+    }
+
+    return json.dumps(dados)
+
+
+```
+
+## Uso
+
+```sh
+polly_to_s3("Texto a ser transformado em áudio")
+```
+## Saída
+```sh
+{
+    "received_phrase": "Texto a ser transformado em áudio",
+    "url_to_audio": "https://polly-spint6.s3.amazonaws.com/polly-X.mp3",
+    "created_audio": "2023-02-13 12:34:56"
+}
+```
+
+
 ### Rotas
