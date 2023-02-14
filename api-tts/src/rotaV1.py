@@ -23,7 +23,7 @@ def tts(event, context):
         
         s3_client.put_object(
             Body=audio,
-            Bucket='bucketpollysprint6',
+            Bucket='audios-sprint-6-grupo-4',
             Key=f'{phrase}.mp3',
         )
 
@@ -32,13 +32,14 @@ def tts(event, context):
         return {
             'statusCode': 200,
             'body': json.dumps({'message': f'Frase convertida para audio com sucesso!',
-                            'audio_url': f'https://s3.amazonaws.com/bucketpollysprint6/{phrase}.mp3',
+                            'audio_url': f'https://s3.amazonaws.com/audios-sprint-6-grupo-4/{phrase}.mp3',
                             'timestamp': time})
         }
-    except:
-        return {"status": 500,
-                    "body": "Error"}
-
-
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'message': 'Erro ao converter frase para audio',
+                                'error': str(e)})
+        }
 
 
