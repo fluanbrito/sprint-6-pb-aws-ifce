@@ -96,8 +96,8 @@ functions:
 
 ### Página HTML
 
-Conforme especificações da avaliação, foi criada uma página HTML para receber do usuário uma frase, a mesma passará pelo processo das rotas da API de foma a ser convertida em audio mp3 utilizando o serviço Amazon Polly e o resultado será retornado ao usuário. 
-Na página apresentada o usuário fornece a frase e pode verificar o resultado no botão converter ou baixar o link de acesso para o arquivo em mp3.
+Conforme especificações da avaliação, foi criada uma página HTML para receber do usuário uma frase qualquer que passará pela rotas da API de forma a ser convertida em audio mp3 utilizando o serviço Amazon Polly e o resultado será retornado ao usuário. 
+Na página apresentada o usuário fornece a frase e pode verificar o resultado no botão converter ou baixar o link de acesso para o arquivo em mp3 que está armazenado no bucket do serviço S3.
 
 ![mp3](https://user-images.githubusercontent.com/103959633/219032662-3485251c-af62-4ede-8133-6c925befbea4.jpg)
 
@@ -152,7 +152,7 @@ Na página apresentada o usuário fornece a frase e pode verificar o resultado n
 ```
 ### API Externa
 
-Para a conexão entre a página HTML e os serviços que serão acessados através das rotas
+Para a conexão entre o arquivo HTML e os serviços que serão acessados através das rotas foi desenvolvida a API externa que recebe a frase que será converdita em audio e transmite o resultado da rota para o usuário por meio do retorno na página web.
   
 ```
 # Importando bibliotecas
@@ -171,10 +171,11 @@ app.run(debug=True)
 
 ### Rota V1 -> Post /v1/tts
 
-A primeria rota utiliza o método POST para enviar a frase recebida através da API para o serviço Amazon Polly. Conforme as configurações no arquivo Serverless.yml, os dados recebidos na rota v1/tts serão encaminhados para o serviço Polly e convertidos em um arquivo mp3, o qual será armazenado em um bucket do serviso Amazon S3. O resultado que será retornado ao usuário será o endereço para o acesso ao audio gerado.
+A primeria rota utiliza o método POST para enviar a frase recebida através da API para o serviço Amazon Polly. Conforme as configurações no arquivo Serverless.yml que será exposto ao final da explanação dos códigos das rotas, os dados recebidos na rota v1/tts serão encaminhados para o serviço Polly e convertidos em um arquivo mp3, o qual será armazenado em um bucket do serviço Amazon S3. 
+O resultado que será retornado ao usuário será o endereço para o acesso ao audio gerado que está armazenado no bucket.
   
 ```
-import boto3
+import boto3 
 import json
 import datetime
 import unicodedata
@@ -222,101 +223,165 @@ def tts(event, context):
   
 ```
 
-Para teste de funcionamento da rota /v2/tts
-
-receberá um post no formato abaixo:
-
-```json
-  {
-    "phrase": "converta esse texto para áudio"
-  }
-```
-
-Resposta a ser entregue:
-
-```json
-  {
-    "received_phrase": "converta esse texto para áudio",
-    "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
-    "created_audio": "02-02-2023 17:00:00"
-  }
-```
-
-Dessa maneira essa será a arquitetura a ser impantada:
+Arquitetura rota /v1/tts:
 
 ![post-v1-tts](./assets/post-v1-tts.png)
 
 
-Exemplos de referência:
-  - https://github.com/SC5/serverless-blog-to-podcast (JS) 
-  - https://github.com/hussainanjar/polly-lambda (Python)
-
 ## Atividade -> Parte 2 
 ### Rota V2 -> Post /v2/tts
 
-Deverá ser criada a rota `/v2/tts` que receberá um post no formato abaixo:
+Para o desenvolvimento da rota /v2/tts, a função que recebe a informação do usuário por meio da rota da API, gera um id único para identificação da frase, esse id funcionará como atributo principal para o armazenamento da referência do arquivo em audio fornecido pelo serviço Polly no banco de dados NoSQL DynamoDB. Semelhante a rota anterior o arquivo fica armazenado do bucket após conversão da frase e o método principal da rota é o post.
 
-```json
-  {
-    "phrase": "converta esse texto para áudio e salve uma referencia no dynamoDB"
-  }
 ```
-- Deverá ser criada uma lógica para que essa frase recebida seja um id unico (um hash).
-- Esse hash será o principal atributo em nosso dynamo db
-Exemplo: "Teste 123" será sempre o id "123456"
-- Com essa frase recebida deverá ser transformada em áudio via AWS Polly
-- Deverá ser armazenada em um S3 (Que deverá ser público, apenas para a nossa avaliação)
-- Deverá ser salva uma referencia no dynamoBD com as seguintes informações: id, frase e url do s3
-- A resposta da chamada da API deverá constar o endereço do audio gerado no S3
+import boto3
+import json
+import hashlib
 
-Resposta a ser entregue:
+#acesso aos serviços das aws
+polly_client = boto3.client('polly')
+s3_client = boto3.client('s3')
+dynamodb = boto3.resource('dynamodb')
 
-```json
-  {
-    "received_phrase": "converta esse texto para áudio",
-    "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
-    "created_audio": "02-02-2023 17:00:00",
-    "unique_id": "123456"
-    
-  }
+def create(event, context):
+    try:
+        phrase = json.loads(event['body'])['phrase']
+
+        # Criar ID único para a frase
+        unique_id = hashlib.sha256(phrase.encode()).hexdigest()
+        
+        response = polly_client.synthesize_speech(
+            OutputFormat='mp3',
+            Text=phrase,
+            VoiceId='Vitoria'
+        )
+
+        audio = response['AudioStream'].read()
+        
+        s3_client.put_object(
+            Body=audio,
+            Bucket='bucketpollysprint6',
+            Key=f'{unique_id}.mp3',
+        )
+
+        audio_url = f'https://s3.amazonaws.com/bucketpollysprint6/{unique_id}.mp3'
+        
+        # Salvar referencia no DynamoDB
+        table = dynamodb.Table('TTS_References')
+        table.put_item(
+            Item={
+                'id': unique_id,
+                'phrase': phrase,
+                'audio_url': audio_url
+            }
+        )
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps({'message': 'Frase convertida para audio com sucesso!',
+                                'audio_url': audio_url})
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'message': 'Erro ao converter frase para audio',
+                                'error': str(e)})
+        }
+  
 ```
-
-Dessa maneira essa será a arquitetura a ser impantada:
+  
+Arquitetura rota /v2/tts:
 
 ![post-v2-tts](./assets/post-v2-tts.png)
-
-
-Exemplos de referência com inserção no dynamoDb:
-  -  https://github.com/serverless/examples/tree/v3/aws-python-http-api-with-dynamodb (Python)
 
 
 ## Atividade -> Parte 3 
 ### Rota V3 -> Post /v3/tts
 
-Deverá ser criada a rota `/v3/tts` que receberá um post no formato abaixo:
+A rota /v3/tts segue a mesma lógica de geração do id único para armazenamento da referência no DynamoDB e do arquivo no bucket do S3. Porém, nesta rota a função irá verificar se a frase informada já foi gerada anteriormente, e caso seja positivo ele faz o retorno do endereço para acesso ao arquivo. Se o id não for localizado, a rota segue o processo de geração do id, conversão em audio e armazenamento, conforme apresentado na rota /v2/tts.
 
-```json
-  {
-    "phrase": "converta esse texto para áudio e salve uma referencia no dynamoDB. Caso a referencia já exista me devolva a URL com audio já gerado"
-  }
 ```
-- Deverá utilizar a lógica do hash para verificar se a frase já foi gerada anteriormente.
-- Caso o hash já exista no dynamo entregue o retorno conforme abaixo.
-- Caso não exista faça a geração do audio, grave no s3 e grave as referencias no dynamo conforme Parte 2
+import boto3
+import json
+import hashlib
 
+polly_client = boto3.client('polly')
+s3_client = boto3.client('s3')
+dynamodb = boto3.resource('dynamodb')
 
-Resposta a ser entregue:
+def list(event, context):
+    try:
+        if():
+            lista = table.scan()['Items']
+            for e in lista:
+                if("id" in lista):
+                    response = polly_client.synthesize_speech(
+                    OutputFormat='mp3',
+                    Text=phrase,
+                    VoiceId='Vitoria'
+                )
 
-```json
-  {
-    "received_phrase": "converta esse texto para áudio",
-    "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
-    "created_audio": "02-02-2023 17:00:00",
-    "unique_id": "123456"
-  }
-```
+                audio = response['AudioStream'].read()
+                
+                s3_client.put_object(
+                    Body=audio,
+                    Bucket='bucketpollysprint6',
+                    Key=f'{unique_id}.mp3',
+                )
 
-Dessa maneira essa será a arquitetura a ser impantada:
+                audio_url = f'https://s3.amazonaws.com/bucketpollysprint6/{unique_id}.mp3'
+                return {
+                'statusCode': 200,
+                'body': json.dumps({'message': 'Frase convertida para audio com sucesso!',
+                                    'audio_url': audio_url})}
+            
+        else:
+            phrase = json.loads(event['body'])['phrase']
+
+            # Criar ID único para a frase
+            unique_id = hashlib.sha256(phrase.encode()).hexdigest()
+            
+            response = polly_client.synthesize_speech(
+                OutputFormat='mp3',
+                Text=phrase,
+                VoiceId='Vitoria'
+            )
+
+            audio = response['AudioStream'].read()
+            
+            s3_client.put_object(
+                Body=audio,
+                Bucket='bucketpollysprint6',
+                Key=f'{unique_id}.mp3',
+            )
+
+            audio_url = f'https://s3.amazonaws.com/bucketpollysprint6/{unique_id}.mp3'
+            
+            # Salvar referencia no DynamoDB
+            table = dynamodb.Table('TTS_References')
+            table.put_item(
+                Item={
+                    'id': unique_id,
+                    'phrase': phrase,
+                    'audio_url': audio_url
+                }
+            )
+            
+            return {
+                'statusCode': 200,
+                'body': json.dumps({'message': 'Frase convertida para audio com sucesso!',
+                                    'audio_url': audio_url})
+            }
+    except Exception as e:
+            return {
+                'statusCode': 500,
+                'body': json.dumps({'message': 'Erro ao converter frase para audio',
+                                    'error': str(e)})
+            }
+  
+```  
+
+Arquitetura rota /v3/tts:
 
 ![post-v3-tts](./assets/post-v3-tts.png)
 
@@ -324,9 +389,7 @@ Dessa maneira essa será a arquitetura a ser impantada:
 
 ## Observações retorno esperado
 
-- os campos de entrada e saida deverão estar nos formatos e com os nomes apresentados.
-- status code para sucesso da requisição será `200`
-- status code para erros deverá ser `500`
+
 
 
 
@@ -334,6 +397,17 @@ Dessa maneira essa será a arquitetura a ser impantada:
 ## 📤 Deploy
 
 <br>
+Para realização do deploy, realizamos as configurações no arquivo serverless.yml, conforme especificado no código. 
+
+```
+```
+  
+Na pasta `api-tts` acionamos o comando a seguir:
+  
+```
+$ serverless deploy
+```
+
 
 ## 🚩Acesso ao projeto
 
