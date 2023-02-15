@@ -382,3 +382,8 @@ def v3_tts(event, context):
     return response
 ```
 
+## Autores
+* [Herisson Hyan](https://github.com/herissonhyan)
+* [Rangel Pereira](https://github.com/Rangelmello)
+* [Luiz Carlos](https://github.com/luiz2CC)
+* [Rafael Pereira](https://github.com/Kurokishin)
