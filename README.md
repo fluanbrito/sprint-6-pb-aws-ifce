@@ -20,12 +20,12 @@
 
 - [♾️ Equipe](#%EF%B8%8F-equipe)
 
-- [📌 Considerações finais e dificuldades](#-considerações-finais-e-dificuldades)
+- [📌 Dificuldades](#-dificuldades)
 
 <br>
 
 ## 📝 Descrição do projeto 
-Criação de uma página html que captura uma frase qualquer inserida pelo usuário e transformará essa frase em um audio em mp3 via polly.
+Criação de uma página html que captura uma frase qualquer inserida pelo usuário e transformará essa frase em um áudio em mp3 via polly.
 
 <p align="justify">
 <hr>
@@ -70,33 +70,11 @@ Default region name [None]: us-east-1
 Default output format [None]: ENTER
   ```
 
-4. Efetuar o deploy da solução na sua conta aws execute (acesse a pasta `api-tts`):
-```
-$ serverless deploy
-```
-Um retorno parecido com isTo:
-
-```bash
-Deploying api-tts to stage dev (us-east-1)
-
-Service deployed to stack api-tts-dev (85s)
-
-endpoints:
-  GET - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/
-  GET - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/v1
-  GET - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/v2
-functions:
-  health: api-tts-dev-health (2.1 kB)
-  v1Description: api-tts-dev-v1Description (2.1 kB)
-  v2Description: api-tts-dev-v2Description (2.1 kB)
-```
-
-
 ## Atividade -> Parte 1 
 
 ### Página HTML
 
-Conforme especificações da avaliação, foi criada uma página HTML para receber do usuário uma frase qualquer que passará pela rotas da API de forma a ser convertida em audio mp3 utilizando o serviço Amazon Polly e o resultado será retornado ao usuário. 
+Conforme especificações da avaliação, foi criada uma página HTML para receber do usuário uma frase qualquer que passará pela rotas da API de forma a ser convertida em áudio mp3 utilizando o serviço Amazon Polly e o resultado será retornado ao usuário. 
 Na página apresentada o usuário fornece a frase e pode verificar o resultado no botão converter ou baixar o link de acesso para o arquivo em mp3 que está armazenado no bucket do serviço S3.
 
 ![mp3](https://user-images.githubusercontent.com/103959633/219032662-3485251c-af62-4ede-8133-6c925befbea4.jpg)
@@ -172,7 +150,7 @@ app.run(debug=True)
 ### Rota V1 -> Post /v1/tts
 
 A primeria rota utiliza o método POST para enviar a frase recebida através da API para o serviço Amazon Polly. Conforme as configurações no arquivo Serverless.yml que será exposto ao final da explanação dos códigos das rotas, os dados recebidos na rota v1/tts serão encaminhados para o serviço Polly e convertidos em um arquivo mp3, o qual será armazenado em um bucket do serviço Amazon S3. 
-O resultado que será retornado ao usuário será o endereço para o acesso ao audio gerado que está armazenado no bucket.
+O resultado que será retornado ao usuário será o endereço para o acesso ao áudio gerado que está armazenado no bucket.
   
 ```
 import boto3 
@@ -231,7 +209,7 @@ Arquitetura rota /v1/tts:
 ## Atividade -> Parte 2 
 ### Rota V2 -> Post /v2/tts
 
-Para o desenvolvimento da rota /v2/tts, a função que recebe a informação do usuário por meio da rota da API, gera um id único para identificação da frase, esse id funcionará como atributo principal para o armazenamento da referência do arquivo em audio fornecido pelo serviço Polly no banco de dados NoSQL DynamoDB. Semelhante a rota anterior o arquivo fica armazenado do bucket após conversão da frase e o método principal da rota é o post.
+Para o desenvolvimento da rota /v2/tts, a função que recebe a informação do usuário por meio da rota da API, gera um id único para identificação da frase, esse id funcionará como atributo principal para o armazenamento da referência do arquivo em áudio fornecido pelo serviço Polly no banco de dados NoSQL DynamoDB. Semelhante a rota anterior o arquivo fica armazenado do bucket após conversão da frase e o método principal da rota é o post.
 
 ```
 import boto3
@@ -298,7 +276,7 @@ Arquitetura rota /v2/tts:
 ## Atividade -> Parte 3 
 ### Rota V3 -> Post /v3/tts
 
-A rota /v3/tts segue a mesma lógica de geração do id único para armazenamento da referência no DynamoDB e do arquivo no bucket do S3. Porém, nesta rota a função irá verificar se a frase informada já foi gerada anteriormente, e caso seja positivo ele faz o retorno do endereço para acesso ao arquivo. Se o id não for localizado, a rota segue o processo de geração do id, conversão em audio e armazenamento, conforme apresentado na rota /v2/tts.
+A rota /v3/tts segue a mesma lógica de geração do id único para armazenamento da referência no DynamoDB e do arquivo no bucket do S3. Porém, nesta rota a função irá verificar se a frase informada já foi gerada anteriormente, e caso seja positivo ele faz o retorno do endereço para acesso ao arquivo. Se o id não for localizado, a rota segue o processo de geração do id, conversão em áudio e armazenamento, conforme apresentado na rota /v2/tts.
 
 ```
 import boto3
@@ -387,29 +365,120 @@ Arquitetura rota /v3/tts:
 
 ***
 
-## Observações retorno esperado
-
-
-
-
-
-
 ## 📤 Deploy
 
 <br>
 Para realização do deploy, realizamos as configurações no arquivo serverless.yml, conforme especificado no código. 
 
 ```
+service: api-tts
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: dynamodb:PutItem
+          Resource: "arn:aws:dynamodb:*:*:table/TTS_References"
+        - Effect: Allow
+          Action: dynamodb:Scan
+          Resource: "arn:aws:dynamodb:*:*:table/TTS_References"
+
+functions:
+  health:
+    handler: handler.health
+    events:
+      - httpApi:
+          path: /
+          method: get
+  v1Description:
+    handler: handler.v1_description
+    events:
+      - httpApi:
+          path: /v1
+          method: get
+  v2Description:
+    handler: handler.v2_description
+    events:
+      - httpApi:
+          path: /v2
+          method: get
+  rota-v1_tts:
+    handler: src/rotaV1.tts
+    events:
+      - http:
+          path: /v1/tts
+          method: post
+          cors: true       
+  rota-v2_tts:
+    handler: src/rotaV2.create
+    events:
+      - http:
+          path: /v2/tts
+          method: post
+          cors: true
+  rota-v3_tts:
+    handler: src/rota.list
+    events:
+      - http:
+          path: /v3/tts
+          method: post
+          cors: true
+
+resources:
+  Resources:
+    ttsDynamoDbTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: TTS_References
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    ttsIamRole:
+      Type: "AWS::IAM::Role"
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Service:
+                  - "lambda.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Policies:
+          - PolicyName: "ttsDynamoDbAccess"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "dynamodb:PutItem"
+                    - "dynamodb:Scan"
+                    - "dynamodb: Query"
+                  Resource: !GetAtt [ttsDynamoDbTable, Arn] 
 ```
   
-Na pasta `api-tts` acionamos o comando a seguir:
+Via cli, na pasta `api-tts` acionamos o comando a seguir:
   
 ```
 $ serverless deploy
 ```
 
+### Observações retorno esperado
 
-## 🚩Acesso ao projeto
+![hj](https://user-images.githubusercontent.com/103959633/219063523-f5c21650-8763-44a8-be15-9dbc2766211e.jpg)
+
+Após a execução do comando as configurações e ferramentas nos serviços da AWS serão criados e especificados para que assim, as rotas possam funcionar conforme projetadas. 
 
 <hr>
 
@@ -424,14 +493,12 @@ $ serverless deploy
 <br>
 <hr>
 
-## 📌 Considerações finais e dificuldades
+## 📌 Dificuldades
 <br>
-No desenvolvimento do projeto uma dos principais impedimentos encontrados estavam nas permissões nas funções da AWS, particurlarmente no serviço Polly.
+- Liberação das permissões de acesso as aplicações da AWS, particurlarmente no serviço Polly.
+- 
 
 
-
-
-
-
+***
 Avaliação da sexta sprint do programa de bolsas Compass.uol para formação em machine learning para AWS.
 
