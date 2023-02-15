@@ -20,7 +20,7 @@
 
 - [♾️ Equipe](#%EF%B8%8F-equipe)
 
-- [📌 Considerações finais](#-considerações-finais)
+- [📌 Considerações finais e dificuldades](#-considerações-finais-e-dificuldades)
 
 <br>
 
@@ -43,8 +43,7 @@ Criação de uma página html que captura uma frase qualquer inserida pelo usuá
 
 ## 🖥️ Código - Execução (Código Fonte)
 
-**Especificações**:
-
+**Configurações Iniciais**:
 
 Passo a passo para iniciar o projeto:
 
@@ -52,7 +51,6 @@ Passo a passo para iniciar o projeto:
 ```json
 npm install -g serverless
 ```
-
 
 2. Gere suas credenciais (AWS Acess Key e AWS Secret) na console AWS pelo IAM. Mais informações [aqui](https://www.serverless.com/framework/docs/providers/aws/guide/credentials/)
 
@@ -95,7 +93,22 @@ functions:
 
 
 ## Atividade -> Parte 1 
-### Rota 4 -> Post /v1/tts
+
+### Página HTML
+
+Conforme especificações da avaliação, foi criada uma página HTML para o usuário fornecesse uma frase qualquer e a mesma passasse pelo processo das rotas da API de foma a ser convertida em audio mp3 utilizando o serviço Amazon Polly e o resultado fosse retornado ao usuário. 
+
+```
+
+
+
+
+
+
+
+### Rota V1 -> Post /v1/tts
+
+Para o desenvolvimento da primeira parte do projeto 
 
 Deverá ser criada a rota `/v1/tts` que receberá um post no formato abaixo:
 
@@ -128,7 +141,7 @@ Exemplos de referência:
   - https://github.com/hussainanjar/polly-lambda (Python)
 
 ## Atividade -> Parte 2 
-### Rota 5 -> Post /v2/tts
+### Rota V2 -> Post /v2/tts
 
 Deverá ser criada a rota `/v2/tts` que receberá um post no formato abaixo:
 
@@ -167,7 +180,7 @@ Exemplos de referência com inserção no dynamoDb:
 
 
 ## Atividade -> Parte 3 
-### Rota 6 -> Post /v3/tts
+### Rota V3 -> Post /v3/tts
 
 Deverá ser criada a rota `/v3/tts` que receberá um post no formato abaixo:
 
@@ -218,17 +231,17 @@ Dessa maneira essa será a arquitetura a ser impantada:
 ## ♾️ Equipe
 <br>
 
-- Mylena Soares
-- Samara Oliveira
-- Júlio César
-- Jhonatan Gonçalves
+- [Mylena Soares](https://github.com/mylensoares)
+- [Samara Alcantara](https://github.com/SamaraAlcantara)
+- [Julio Cesar](https://github.com/JC-Rodrigues)
+- [Jhonatan Gonçalves](https://github.com/jhonatangoncalvespereira)
 
 <br>
 <hr>
 
-## 📌 Considerações finais
+## 📌 Considerações finais e dificuldades
 <br>
-Em resumo, ...
+No desenvolvimento do projeto uma dos principais impedimentos encontrados estavam nas permissões nas funções da AWS, particurlarmente no serviço Polly.
 
 
 
