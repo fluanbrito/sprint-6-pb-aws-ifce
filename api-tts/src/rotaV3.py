@@ -1,10 +1,12 @@
 import boto3
 import json
 import hashlib
+import datetime
 
 polly_client = boto3.client('polly')
 s3_client = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
+
 
 def list(event, context):
     try:
@@ -13,31 +15,31 @@ def list(event, context):
             for e in lista:
                 if("id" in lista):
                     response = polly_client.synthesize_speech(
-                    OutputFormat='mp3',
-                    Text=phrase,
-                    VoiceId='Vitoria'
-                )
+                        OutputFormat='mp3',
+                        Text=phrase,
+                        VoiceId='Vitoria'
+                    )
 
                 audio = response['AudioStream'].read()
-                
+
                 s3_client.put_object(
                     Body=audio,
-                    Bucket='bucketpollysprint6',
+                    Bucket='audios-sprint-6-grupo-4',
                     Key=f'{unique_id}.mp3',
                 )
 
-                audio_url = f'https://s3.amazonaws.com/bucketpollysprint6/{unique_id}.mp3'
+                audio_url = f'https://s3.amazonaws.com/audios-sprint-6-grupo-4/{unique_id}.mp3'
                 return {
-                'statusCode': 200,
-                'body': json.dumps({'message': 'Frase convertida para audio com sucesso!',
-                                    'audio_url': audio_url})}
-            
+                    'statusCode': 200,
+                    'body': json.dumps({'message': 'Frase convertida para audio com sucesso!',
+                                        'audio_url': audio_url})}
+
         else:
             phrase = json.loads(event['body'])['phrase']
 
             # Criar ID único para a frase
             unique_id = hashlib.sha256(phrase.encode()).hexdigest()
-            
+
             response = polly_client.synthesize_speech(
                 OutputFormat='mp3',
                 Text=phrase,
@@ -45,15 +47,15 @@ def list(event, context):
             )
 
             audio = response['AudioStream'].read()
-            
+
             s3_client.put_object(
                 Body=audio,
-                Bucket='bucketpollysprint6',
+                Bucket='audios-sprint-6-grupo-4',
                 Key=f'{unique_id}.mp3',
             )
 
-            audio_url = f'https://s3.amazonaws.com/bucketpollysprint6/{unique_id}.mp3'
-            
+            audio_url = f'https://s3.amazonaws.com/audios-sprint-6-grupo-4/{unique_id}.mp3'
+
             # Salvar referencia no DynamoDB
             table = dynamodb.Table('TTS_References')
             table.put_item(
@@ -63,15 +65,19 @@ def list(event, context):
                     'audio_url': audio_url
                 }
             )
-            
+
             return {
                 'statusCode': 200,
-                'body': json.dumps({'message': 'Frase convertida para audio com sucesso!',
-                                    'audio_url': audio_url})
+                'body': json.dumps({
+                    'received_phrase': 'Frase convertida para audio com sucesso!',
+                    'url_to_audio': audio_url,
+                    'created_audio':  datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+                    'unique_id':  unique_id
+                })
             }
     except Exception as e:
-            return {
-                'statusCode': 500,
-                'body': json.dumps({'message': 'Erro ao converter frase para audio',
-                                    'error': str(e)})
-            }
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'message': 'Erro ao converter frase para audio',
+                                'error': str(e)})
+        }

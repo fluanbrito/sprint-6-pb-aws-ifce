@@ -4,6 +4,15 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: python3.9
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: dynamodb:PutItem
+          Resource: "arn:aws:dynamodb:*:*:table/TTS_References"
+        - Effect: Allow
+          Action: dynamodb:Scan
+          Resource: "arn:aws:dynamodb:*:*:table/TTS_References"
 
 functions:
   health:
@@ -30,35 +39,21 @@ functions:
       - http:
           path: /v1/tts
           method: post
-          cors: true
-          
+          cors: true       
   rota-v2_tts:
-    handler: src/teste.create
+    handler: src/rotaV2.create
     events:
       - http:
-          path: v2/tts
+          path: /v2/tts
           method: post
           cors: true
-    Statements:
-      - Effect: "Allow"
-        Action:
-          - "dynamodb:PutItem"
-        Resource: !GetAtt [ttsDynamoDbTable, Arn]
-  
   rota-v3_tts:
-    handler: src/teste2.list
+    handler: src/rota.list
     events:
       - http:
-          path: v3/tts
+          path: /v3/tts
           method: post
           cors: true
-    Statements:
-      - Effect: "Allow"
-        Action:
-          - "dynamodb:Scan"
-        Resource: !GetAtt [ttsDynamoDbTable, Arn]
-
-
 
 resources:
   Resources:

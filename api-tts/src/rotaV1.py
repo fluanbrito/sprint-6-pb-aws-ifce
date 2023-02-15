@@ -6,6 +6,7 @@ import unicodedata
 polly_client = boto3.client('polly')
 s3_client = boto3.client('s3')
 
+
 def tts(event, context):
     try:
 
@@ -20,7 +21,7 @@ def tts(event, context):
         audio = response['AudioStream'].read()
         phrase = unicodedata.normalize('NFKD', str(phrase).replace(" ", ""))
         phrase = "".join([c for c in phrase if not unicodedata.combining(c)])
-        
+
         s3_client.put_object(
             Body=audio,
             Bucket='audios-sprint-6-grupo-4',
@@ -28,12 +29,14 @@ def tts(event, context):
         )
 
         time = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        
+
         return {
             'statusCode': 200,
-            'body': json.dumps({'message': f'Frase convertida para audio com sucesso!',
-                            'audio_url': f'https://s3.amazonaws.com/audios-sprint-6-grupo-4/{phrase}.mp3',
-                            'timestamp': time})
+            'body': json.dumps({'received_phrase': phrase,
+                                'url_to_audio': f'https://s3.amazonaws.com/audios-sprint-6-grupo-4/{phrase}.mp3',
+                                'created_audio': time}
+
+                               )
         }
     except Exception as e:
         return {
@@ -41,5 +44,3 @@ def tts(event, context):
             'body': json.dumps({'message': 'Erro ao converter frase para audio',
                                 'error': str(e)})
         }
-
-
