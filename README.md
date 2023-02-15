@@ -12,6 +12,14 @@ Avaliação da sexta sprint do programa de bolsas Compass UOL para formação em
 * [Desenvolvimento](#desenvolvimento)
   * [Conversão para áudio](#conversão-de-texto-em-áudio-via-polly)
   * [Arquitetura serverless](#estrutura-serverless)
+  * [Funções](#funções)
+    * [Criação do hash](#hash)
+    * [Conexão Polly com S3](#polly-para-s3)
+    * [Conexão com o DynamoDB](#upload-para-o-dynamodb)
+    * [Checagem de ID no DynamoDB](#checagem-de-id-no-dynamodb)
+  * [Rotas](#rotas)
+  * [Conclusão](#conclusão)
+  * [Autores](#autores)
 
 ## Objetivo
 
@@ -121,6 +129,36 @@ O bloco de *functions* que definem o serviço de TTS, sendo elas:
 * **v1Description**, **v2Description**, e **v3Description** são acionadas por um GET para os endpoints **/v1**, **/v2**, **/v3** respectivamente.
 * Já as funções **v1_tts**, **v2_tts**, e **v3_tts** são ativadas pelo método POST para as rotas **/v1/tts**, **/v2/tts**, e **/v3/tts**.
 
+## Funções
+
+### Hash
+
+Para a criação do ID da frase inserida pelo usuário é utilizado uma função que converte o texto utilizando ho hash SHA-256.
+
+O resultado do hash é uma representação binária, então é selecionado os 8 primeiros bits para serem convertidos em hexadecimal, que serve como um identificador único para o texto inserido.
+
+```py
+import hashlib
+
+def generate_short_id(phrase):
+    # Codificar a frase em bytes
+    phrase_bytes = phrase.encode()
+
+    # Gerar o hash sha256 da frase
+    sha256 = hashlib.sha256(phrase_bytes)
+
+    # Converter o hash em uma representação binária
+    bin_sha256 = sha256.digest()
+
+    # Selecionar os primeiros n dígitos
+    short_id = bin_sha256[:8]
+
+    # Converter a representação binária de volta para hexadecimal
+    hex_short_id = short_id.hex()
+
+    return hex_short_id
+```
+
 ### Polly para S3
 Este script tem como objetivo criar um áudio utilizando a tecnologia Polly da Amazon Web Services (AWS) e armazenar esse áudio no serviço S3 também da AWS.
 
@@ -134,7 +172,6 @@ O script também retorna um objeto JSON com as informações da frase utilizada 
 
 ```py
 import boto3
-
 
 def polly_to_s3(text):
     polly = boto3.client('polly')
@@ -176,12 +213,12 @@ def polly_to_s3(text):
 
     return json.dumps(dados)
 ```
-### Uso
+**Uso**
 
 ```py
 polly_to_s3("Texto a ser transformado em áudio")
 ```
-### Saída
+**Saída**
 ```json
 {
     "received_phrase": "Texto a ser transformado em áudio",
@@ -189,6 +226,53 @@ polly_to_s3("Texto a ser transformado em áudio")
     "created_audio": "2023-02-13 12:34:56"
 }
 ```
+
+### Upload para o DynamoDB
+
+Uma conexão é feita com o banco de dados utilizando a biblioteca **boto3**, então uma tabela é referenciada, onde os dados do JSON são inseridos.
+
+```py
+import json
+import boto3
+
+def insert_json_into_dynamodb(json_data, table_name):
+    # Cria uma conexão com o DynamoDB
+    dynamodb = boto3.resource('dynamodb')
+
+    # Obtém a referência para a tabela
+    table = dynamodb.Table(table_name)
+    json_response = json.loads(json_data)
+
+    # Insere os dados JSON na tabela
+    table.put_item(Item=json_response)
+```
+
+### Checagem de ID no DynamoDB
+
+Essencialmente, a [função](https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce/blob/Grupo-5/api-tts/functions/query.py) checa se um determinado item existe em uma tabela do DynamoDB, consultando-o com um identificador. Se o item existir, a função retorna o conteúdo como JSON, se não o valor retornado é *False*.
+
+```py
+import json
+import boto3
+
+def check_if_item_exists(table_name, unique_id):
+    # Criando uma instância do DynamoDB
+    dynamodb = boto3.resource("dynamodb")
+    table = dynamodb.Table(table_name)
+
+    response = table.get_item(
+        Key={
+            "unique_id": unique_id
+        }
+    )
+
+    item = response.get("Item")
+    if item:
+        return json.dumps(item)
+    else:
+        return False
+```
+
 ## Rotas
 
 **v1/tts**
@@ -241,7 +325,6 @@ from functions.hash import generate_short_id
 from functions.pollyRequest import polly_to_s3
 from functions.upload import insert_json_into_dynamodb
 
-
 def v2_tts(event, context):
     body = json.loads(event.get('body', '{}'))
     
@@ -265,14 +348,13 @@ def v2_tts(event, context):
 
 **v3/tts**
 
-Essa rota possui características bastante similares a segunda rota, sua [função](https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce/blob/Grupo-5/api-tts/routes/rota3.py) possui como principal diferença a capacidade de checar se o ID ofertado já existe na banco de dados, se esse for o caso o JSON armazenado é retornado, mas se o ID não existir uma novo JSON é gerado e armazenado no **json_table** e retornado para o usuário.
+Essa [rota](https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce/blob/Grupo-5/api-tts/routes/rota3.py) possui características bastante similares a segunda rota, sua função possui como principal diferença a capacidade de checar se o ID ofertado já existe na banco de dados, se esse for o caso o JSON armazenado é retornado, mas se o ID não existir uma novo JSON é gerado e armazenado no **json_table** e retornado para o usuário.
 
 ```py
 from functions.hash import generate_short_id
 from functions.pollyRequest import polly_to_s3
 from functions.query import check_if_item_exists
 from functions.upload import insert_json_into_dynamodb
-
 
 def v3_tts(event, context):
     body = json.loads(event.get('body', '{}'))
@@ -298,6 +380,17 @@ def v3_tts(event, context):
         else:
             json_response=check_if_item_exists('json_table',generate_short_id(data))
             response = {"statusCode": 200, "body": json_response}
-            
+
     return response
 ```
+## Conclusão
+
+O projeto foi desenvolvido utilizando os serviços da AWS: Polly, S3 e DynamoDB.
+
+Por meio dessas funcionalidades foi possível gerar voz por meio de uma frase e armazenar o áudio gerado, assim como consultar o mesmo. Tudo isso com a utilização da computação em nuvem, que permite aplicações em IA sejam melhoradas de maneira segura, escalável e de fácil gerenciamento.
+
+## Autores
+* [Herisson Hyan](https://github.com/herissonhyan)
+* [Rangel Pereira](https://github.com/Rangelmello)
+* [Luiz Carlos](https://github.com/luiz2CC)
+* [Rafael Pereira](https://github.com/Kurokishin)
