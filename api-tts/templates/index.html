@@ -1,0 +1,52 @@
+<!-- <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serviço de tts</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <div>
+        <div>
+            <h1>Insira o texto que será convertido para áudio</h1>
+        </div>
+        <div id="search-container">
+            <form action="/v1/tts" method="post"></form>
+            <input type="text" id="search-bar" placeholder="Insira o texto aqui">
+        </div>
+    </div>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serviço de tts</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <div>
+        <div>
+            <h1>Insira o texto que será convertido para áudio</h1>
+        </div>
+        <div id="search-container">
+            <form action="/v1/tts" method="post">
+                <input type="text" id="search-bar" placeholder="Insira o texto aqui">
+            </form>
+            <button onclick="document.getElementById('form1').submit()">Rota 1</button>
+            <button onclick="document.getElementById('form2').submit()">Rota 2</button>
+            <button onclick="document.getElementById('form3').submit()">Rota 3</button>
+        </div>
+        <form id="form2" action="/v2/tts" method="post">
+            <input type="text" id="form2-input" placeholder="Insira o texto aqui">
+        </form>
+        <form id="form3" action="/v3/tts" method="post">
+            <input type="text" id="form3-input" placeholder="Insira o texto aqui">
+        </form>
+    </div>
+</body>
+</html>
