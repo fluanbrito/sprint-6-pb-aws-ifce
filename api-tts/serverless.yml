@@ -30,3 +30,9 @@ functions:
       - httpApi:
           path: /v1/tts
           method: post
+  v2_tts:
+    handler: v2.v2_tts
+    events:
+      - httpApi:
+          path: /v2/tts
+          method: post

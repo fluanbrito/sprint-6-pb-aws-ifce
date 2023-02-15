@@ -1,13 +1,14 @@
 import boto3
+import os
 import json
 import uuid
-import os
 from datetime import datetime
 
 
-def v1_tts(event, context):
+def v2_tts(event, context):
     try:
         identificador = str(uuid.uuid4())
+
         text = event["phrase"]
 
         polly = boto3.Session(
@@ -26,18 +27,34 @@ def v1_tts(event, context):
                       Bucket=os.environ['BUCKET_NAME'],
                       Body=response['AudioStream'].read())
 
+        dynamoDB = boto3.resource('dynamodb')
+
+        tabela = dynamoDB.Table("sprint6grupo1")
+
+        hash_ = str(hash(text))
+        
         url = "https://" \
             + str(os.environ['BUCKET_NAME']) \
             + ".s3.amazonaws.com/" \
             + str(identificador) \
             + ".mp3"
+        
+        tabela.put_item(
+            Item= {
+                "unique_id": hash_,
+                "phrase": text,
+                "url": url
+            }
+            )
+        
 
         return {
             "status": 200,
             "body": {
                 "received_phrase": text,
                 "url_to_audio": url,
-                "created_audio": f"{datetime.now()}"
+                "created_audio": f"{datetime.now()}",
+                "unique_id": hash_
             }
         }
     except Exception as err:
