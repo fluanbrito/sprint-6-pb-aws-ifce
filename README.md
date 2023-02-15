@@ -18,6 +18,8 @@ Avaliação da sexta sprint do programa de bolsas Compass UOL para formação em
     * [Conexão com o DynamoDB](#upload-para-o-dynamodb)
     * [Checagem de ID no DynamoDB](#checagem-de-id-no-dynamodb)
   * [Rotas](#rotas)
+  * [Conclusão](#conclusão)
+  * [Autores](#autores)
 
 ## Objetivo
 
@@ -381,6 +383,11 @@ def v3_tts(event, context):
 
     return response
 ```
+## Conclusão
+
+O projeto foi desenvolvido utilizando os serviços da AWS: Polly, S3 e DynamoDB.
+
+Por meio dessas funcionalidades foi possível gerar voz por meio de uma frase e armazenar o áudio gerado, assim como consultar o mesmo. Tudo isso com a utilização da computação em nuvem, que permite aplicações em IA sejam melhoradas de maneira segura, escalável e de fácil gerenciamento.
 
 ## Autores
 * [Herisson Hyan](https://github.com/herissonhyan)
