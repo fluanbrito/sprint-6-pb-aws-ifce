@@ -96,10 +96,64 @@ functions:
 
 ### Página HTML
 
-Conforme especificações da avaliação, foi criada uma página HTML para o usuário fornecesse uma frase qualquer e a mesma passasse pelo processo das rotas da API de foma a ser convertida em audio mp3 utilizando o serviço Amazon Polly e o resultado fosse retornado ao usuário. 
+Conforme especificações da avaliação, foi criada uma página HTML para receber do usuário  uma frase, a mesma passará pelo processo das rotas da API de foma a ser convertida em audio mp3 utilizando o serviço Amazon Polly e o resultado será retornado ao usuário. 
+
+[mp3](mp3.jpg)
 
 ```
+<!DOCTYPE html>
+<html>
 
+<head>
+    <title>Conversor de Texto em Áudio</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row" style="margin-top: 40px;">
+            <div class="col-md-3"></div>
+            <div class="col-md-6 bg-info text-white text-center" style="padding: 20px;">
+                <h2 class="text-center">Conversor de Texto em Áudio</h2>
+                <hr>
+                <form>
+                    <div class="form-group text-left">
+                        <label for="texto">Texto a Converter:</label>
+                        <textarea class="form-control" id="texto" name="texto" rows="4"></textarea>
+                    </div>
+                    <div class="form-group text-right">
+                        <button type="submit" class="btn btn-warning">Converter</button>
+                    </div>
+                    <hr>
+                    <div class=" form-group">
+                        <label for="">Link</label>
+                            <a class="btn btn-danger" href="https://s3.amazonaws.com/audios-sprint-6-grupo-4/convertaessetextoparaaudio.mp3" >Baixe o Audio</a>
+                    </div>
+                </form>
+                <hr>
+                <p>
+                    Compass Uol - PB IFCE - Grupo 4
+                </p>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+
+
+</body>
+
+</html>
+```
 
 
 
