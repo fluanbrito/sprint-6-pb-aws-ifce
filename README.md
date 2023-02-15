@@ -121,20 +121,18 @@ O bloco de *functions* que definem o serviço de TTS, sendo elas:
 * **v1Description**, **v2Description**, e **v3Description** são acionadas por um GET para os endpoints **/v1**, **/v2**, **/v3** respectivamente.
 * Já as funções **v1_tts**, **v2_tts**, e **v3_tts** são ativadas pelo método POST para as rotas **/v1/tts**, **/v2/tts**, e **/v3/tts**.
 
-# Polly to S3
+### Polly para S3
 Este script tem como objetivo criar um áudio utilizando a tecnologia Polly da Amazon Web Services (AWS) e armazenar esse áudio no serviço S3 também da AWS.
 
-## Funcionamento 
+**Funcionamento**
+
 O script recebe como entrada uma string que será utilizada para criar o áudio. A biblioteca boto3 é utilizada para se conectar à API Polly e criar o áudio, além de armazená-lo no S3.
 
 O arquivo de áudio é salvo com o nome "polly-X.mp3", onde X é o número de arquivos já presentes na pasta do bucket do S3. Além disso, é gerado um link de acesso público ao arquivo armazenado no S3.
 
 O script também retorna um objeto JSON com as informações da frase utilizada para criar o áudio, o link de acesso ao arquivo de áudio e a data e hora em que o arquivo foi criado.
-```sh
-import datetime
-import json
-from datetime import timedelta
 
+```py
 import boto3
 
 
@@ -177,23 +175,129 @@ def polly_to_s3(text):
     }
 
     return json.dumps(dados)
-
-
 ```
+### Uso
 
-## Uso
-
-```sh
+```py
 polly_to_s3("Texto a ser transformado em áudio")
 ```
-## Saída
-```sh
+### Saída
+```json
 {
     "received_phrase": "Texto a ser transformado em áudio",
     "url_to_audio": "https://polly-spint6.s3.amazonaws.com/polly-X.mp3",
     "created_audio": "2023-02-13 12:34:56"
 }
 ```
+## Rotas
+
+**v1/tts**
+
+A [função](https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce/blob/Grupo-5/api-tts/routes/rota1.py) carrega um *body request* em JSON e extrai os valores das chaves *key* e *phrase* de um dicionário.
+
+Se o valor de *key* for o mesmo da chave de segurança predeterminada, então é chamada a função *polly_to_s3()* para armazenar o áudio produzido no S3.
+
+Caso o código hash não seja o mesmo, a condição de erro é acionada retornando o status 500.
+
+```py
+from functions.pollyRequest import polly_to_s3
 
 
-### Rotas
+def v1_tts(event, context):
+    # Carregar o corpo da requisição como um dicionário
+    body = json.loads(event.get('body', '{}'))
+    
+    # Recuperar os dados enviados na requisição
+    key = body.get('key', [])
+    data = body.get('phrase', [])
+    if key=='749abaa6a1d2a2aa894a5d711b951eb8':
+        json_response=polly_to_s3(data)
+
+        response = {
+                    "statusCode": 200,
+                    "body": json_response
+                }
+    else:
+        body = {
+        "Erro": "Chave de segurança incorreta ou inexistente, certifique-se se o seu JSON possui o campo key!"
+        }
+
+        response = {"statusCode": 500, "body": json.dumps(body)}
+    
+                
+
+    
+    return response
+```
+
+**v2/tts**
+
+Similarmente a rota anterior, essa [função](https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce/blob/Grupo-5/api-tts/routes/rota2.py) lambda converte texto para áudio e salva no S3, com a diferença que a informação do arquivo também é salvo em uma tabela no banco de dados DynamoDB.
+
+Após a checagem da chave de segurança hash, o arquivo vai para o S3 e gera um ID único que é adicionado na resposta da API e é guardado no bando de dados. O resultado do corpo da requisição mostra informações do arquivo de áudio juntamente com o ID gerado.
+
+```py
+from functions.hash import generate_short_id
+from functions.pollyRequest import polly_to_s3
+from functions.upload import insert_json_into_dynamodb
+
+
+def v2_tts(event, context):
+    body = json.loads(event.get('body', '{}'))
+    
+    # Recuperar os dados enviados na requisição
+    key = body.get('key', [])
+    data = body.get('phrase', [])
+    if key=='749abaa6a1d2a2aa894a5d711b951eb8':
+        json_response = polly_to_s3(data)
+        json_response = json.loads(json_response)
+        json_hash = {"unique_id": generate_short_id(data)}
+        json_response.update(json_hash)
+        json_response=json.dumps(json_response)
+        insert_json_into_dynamodb(json_response,'json_table')
+        response = {
+                        "statusCode": 200,
+                        "body":json_response
+                    }
+        
+        return response
+```
+
+**v3/tts**
+
+Essa rota possui características bastante similares a segunda rota, sua [função](https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce/blob/Grupo-5/api-tts/routes/rota3.py) possui como principal diferença a capacidade de checar se o ID ofertado já existe na banco de dados, se esse for o caso o JSON armazenado é retornado, mas se o ID não existir uma novo JSON é gerado e armazenado no **json_table** e retornado para o usuário.
+
+```py
+from functions.hash import generate_short_id
+from functions.pollyRequest import polly_to_s3
+from functions.query import check_if_item_exists
+from functions.upload import insert_json_into_dynamodb
+
+
+def v3_tts(event, context):
+    body = json.loads(event.get('body', '{}'))
+    
+    # Recuperar os dados enviados na requisição
+    key = body.get('key', [])
+    data = body.get('phrase', [])
+
+    
+    json_hash = {"unique_id": generate_short_id(data)}
+    
+    if key=='749abaa6a1d2a2aa894a5d711b951eb8':
+        if check_if_item_exists('json_table',generate_short_id(data))==False:
+            json_response = polly_to_s3(data)
+            json_response = json.loads(json_response)  
+            json_response.update(json_hash)
+            json_response=json.dumps(json_response)
+            insert_json_into_dynamodb(json_response,'json_table')
+            response = {
+                            "statusCode": 200,
+                            "body":json_response
+                        }
+        else:
+            json_response=check_if_item_exists('json_table',generate_short_id(data))
+            response = {"statusCode": 200, "body": json_response}
+            
+    return response
+```
