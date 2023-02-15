@@ -96,20 +96,20 @@ functions:
 
 ### Página HTML
 
-Conforme especificações da avaliação, foi criada uma página HTML para receber do usuário  uma frase, a mesma passará pelo processo das rotas da API de foma a ser convertida em audio mp3 utilizando o serviço Amazon Polly e o resultado será retornado ao usuário. 
+Conforme especificações da avaliação, foi criada uma página HTML para receber do usuário uma frase, a mesma passará pelo processo das rotas da API de foma a ser convertida em audio mp3 utilizando o serviço Amazon Polly e o resultado será retornado ao usuário. 
+Na página apresentada o usuário fornece a frase e pode verificar o resultado no botão converter ou baixar o link de acesso para o arquivo em mp3.
 
-[mp3](mp3.jpg)
+![mp3](https://user-images.githubusercontent.com/103959633/219032662-3485251c-af62-4ede-8133-6c925befbea4.jpg)
 
+**Código HTML**
 ```
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Conversor de Texto em Áudio</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
-
 <body>
     <div class="container">
         <div class="row" style="margin-top: 40px;">
@@ -147,33 +147,90 @@ Conforme especificações da avaliação, foi criada uma página HTML para receb
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
-
-
-
 </body>
-
 </html>
 ```
+### API Externa
 
+Para a conexão entre a página HTML e os serviços que serão acessados através das rotas
+  
+```
+# Importando bibliotecas
+from flask import Flask, request, render_template
+import boto3
 
+app = Flask(__name__)
 
-
-
+# Criando rota e conectanto ao serviço aws polly
+@app.route('/')
+def index():
+    return render_template("index.html")
+   
+app.run(debug=True)  
+```
 
 ### Rota V1 -> Post /v1/tts
 
-Para o desenvolvimento da primeira parte do projeto 
+A primeria rota utiliza o método POST para enviar a frase recebida através da API para o serviço Amazon Polly. Conforme as configurações no arquivo Serverless.yml, os dados recebidos na rota v1/tts serão encaminhados para o serviço Polly e convertidos em um arquivo mp3, o qual será armazenado em um bucket do serviso Amazon S3. O resultado que será retornado ao usuário será o endereço para o acesso ao audio gerado.
+  
+```
+import boto3
+import json
+import datetime
+import unicodedata
 
-Deverá ser criada a rota `/v1/tts` que receberá um post no formato abaixo:
+#Acessando os serviços Polly e S3
+polly_client = boto3.client('polly')
+s3_client = boto3.client('s3')
+
+def tts(event, context):
+    try:
+
+        phrase = json.loads(event['body'])['phrase']
+        
+        response = polly_client.synthesize_speech(
+            OutputFormat='mp3',
+            Text=phrase,
+            VoiceId='Vitoria'
+        )
+
+        audio = response['AudioStream'].read()
+        phrase = unicodedata.normalize('NFKD', str(phrase).replace(" ", ""))
+        phrase = "".join([c for c in phrase if not unicodedata.combining(c)])
+        
+        #salvando arquivo no bucket
+        s3_client.put_object(
+            Body=audio,
+            Bucket='audios-sprint-6-grupo-4',
+            Key=f'{phrase}.mp3',
+        )
+
+        time = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps({'message': f'Frase convertida para audio com sucesso!',
+                            'audio_url': f'https://s3.amazonaws.com/audios-sprint-6-grupo-4/{phrase}.mp3',
+                            'timestamp': time})
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'message': 'Erro ao converter frase para audio',
+                                'error': str(e)})
+        }
+  
+```
+
+Para teste de funcionamento da rota /v2/tts
+
+receberá um post no formato abaixo:
 
 ```json
   {
     "phrase": "converta esse texto para áudio"
   }
 ```
-- Essa frase recebida deverá ser transformada em áudio via AWS Polly
-- Deverá ser armazenada em um S3 (Que deverá ser público, apenas para a nossa avaliação)
-- A resposta da chamada da API deverá constar o endereço do audio gerado no S3
 
 Resposta a ser entregue:
 
