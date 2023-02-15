@@ -1,45 +1,52 @@
 import boto3
-import os
-import uuid
 import json
-import logging
+import hashlib
 
-s3 = boto3.resource('s3')
-s3 = boto3.resource('s3')
-transcribe = boto3.client('transcribe')
+polly_client = boto3.client('polly')
+s3_client = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
 
-#criação da tabela
-def get_dynamo_table():
-    dynamodb = boto3.resource("dynamodb")
-    table_name = os.environ['TABLE']
-    return dynamodb.Table(table_name)
-
-
-#Modo create
 def create(event, context):
-    body = event["body"]
     try:
-        if ("frase" in body and "url" in body):
-            table = get_dynamo_table()
+        phrase = json.loads(event['body'])['phrase']
 
-            table.put_item(
-                Item={
-                    "id": str(uuid.uuid4()),
-                    "frase":  body["frase"],
-                    "url": body["url"],
-                }
-            )
-            body = {
-                "received_phrase": "converta esse texto para áudio",
-                "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
-                "created_audio": "02-02-2023 17:00:00",
-                "unique_id": "123456"
-                }
-            response = {"status": 200,
-                    "body": json.dumps(body)}
+        # Criar ID único para a frase
+        unique_id = hashlib.sha256(phrase.encode()).hexdigest()
+        
+        response = polly_client.synthesize_speech(
+            OutputFormat='mp3',
+            Text=phrase,
+            VoiceId='Vitoria'
+        )
 
-            return response
-    except:
-        return {"status": 500,
-                    "body": "Error"}
+        audio = response['AudioStream'].read()
+        
+        s3_client.put_object(
+            Body=audio,
+            Bucket='bucketpollysprint6',
+            Key=f'{unique_id}.mp3',
+        )
+
+        audio_url = f'https://s3.amazonaws.com/bucketpollysprint6/{unique_id}.mp3'
+        
+        # Salvar referencia no DynamoDB
+        table = dynamodb.Table('TTS_References')
+        table.put_item(
+            Item={
+                'id': unique_id,
+                'phrase': phrase,
+                'audio_url': audio_url
+            }
+        )
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps({'message': 'Frase convertida para audio com sucesso!',
+                                'audio_url': audio_url})
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'message': 'Erro ao converter frase para audio',
+                                'error': str(e)})
+        }

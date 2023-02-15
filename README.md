@@ -1,36 +1,65 @@
-# Avaliação Sprint 6 - Programa de Bolsas Compass.uol / AWS e IFCE
+![Logo_CompassoUOL_Positivo](https://user-images.githubusercontent.com/94761781/212589731-3d9e9380-e9ea-4ea2-9f52-fc6595f8d3f0.png)
+# 📑 Avaliação Sprint 6 - Programa de Bolsas Compass.uol / AWS e IFCE
 
-Avaliação da sexta sprint do programa de bolsas Compass.uol para formação em machine learning para AWS.
+<hr>
+<p align="center">
+  
+<img src="https://img.shields.io/static/v1?label=STATUS&message=construindo&color=RED&style=for-the-badge" />
+</p>
 
-***
 
-## Execução (Código Fonte)
+## 📌 Tópicos 
 
-Com base nas atividades anteriores realizadas, crie uma página html que irá capturar uma frase qualquer inserida pelo usuário e transformará essa frase em um audio em mp3 via polly.
+- [📝 Descrição do projeto](#-descrição-do-projeto)
 
+- [🧑‍💻👩‍💻 Ferramentas e Tecnologias](#-ferramentas-e-tecnologias)
+
+- [🖥️ Código](#%EF%B8%8F-código)
+
+- [📤 Deploy - serviço Elastic Beanstalck](#-deploy)
+
+- [♾️ Equipe](#%EF%B8%8F-equipe)
+
+- [📌 Considerações finais](#-considerações-finais)
+
+<br>
+
+## 📝 Descrição do projeto 
+Criação de uma página html que captura uma frase qualquer inserida pelo usuário e transformará essa frase em um audio em mp3 via polly.
+
+<p align="justify">
+<hr>
+
+## 🧑‍💻👩‍💻 Ferramentas e Tecnologias 
+
+<br>
+<a href="https://aws.amazon.com/pt/polly/" target="_blank"> 
+<img src="https://imgs.search.brave.com/Q8TsMuqn0Ggx-ePHHX5cbZ6wcQkAb6tpaR6EZoOMe8o/rs:fit:200:200:1/g:ce/aHR0cHM6Ly9rYWxs/aW9wZS1wcm9qZWN0/LmdpdGh1Yi5pby9p/bWFnZXMvcG9sbHlf/dHRzLnBuZw" alt="androidStudio" width="40" title="Polly" height="40"/> </a> <a href="https://aws.amazon.com/pt/api-gateway/ target="_blank"> <img src="https://imgs.search.brave.com/-mAOrY3RTIz9jBKsHpv8wvpy2cOF7CV6YtfUxnUN9Bo/rs:fit:1200:1200:1/g:ce/aHR0cHM6Ly9jZG4u/ZnJlZWJpZXN1cHBs/eS5jb20vbG9nb3Mv/bGFyZ2UvMngvYXdz/LWFwaS1nYXRld2F5/LWxvZ28tcG5nLXRy/YW5zcGFyZW50LnBu/Zw" title="API GATEWAY" alt="java" width="40" height="40"/> </a> 
+<a href="https://aws.amazon.com/pt/lambda/" target="_blank"> <img src="https://imgs.search.brave.com/u5UqI1qsoHqoY1QGcfWS7WU9jmaGEgxhwqlYZbJ9Eoo/rs:fit:725:750:1/g:ce/aHR0cHM6Ly9pMS53/cC5jb20vYmxvZy5j/b250YWN0c3Vubnku/Y29tL3dwLWNvbnRl/bnQvdXBsb2Fkcy8y/MDE5LzExL2F3c19s/YW1iZGFfbG9nby5w/bmc_c3NsPTE" alt="firebase" width="40" height="40" title="AWS Lambda"/> </a><a href="https://aws.amazon.com/pt/dynamodb/" target="_blank"> <img src="https://imgs.search.brave.com/84pQUKFRPnJD0Fcoc-rwRZMAGrjIWdFHC9C1lX02LFc/rs:fit:1200:1200:1/g:ce/aHR0cHM6Ly9jZG4u/ZnJlZWJpZXN1cHBs/eS5jb20vbG9nb3Mv/bGFyZ2UvMngvYXdz/LWR5bmFtb2RiLWxv/Z28tcG5nLXRyYW5z/cGFyZW50LnBuZw" alt="firebase" width="40" height="40" title="AWS DYnanmo DB"/> </a> <a href="https://aws.amazon.com/pt/s3/" target="_blank"> <img src="https://imgs.search.brave.com/uKMT5jd0yYlnw-jAFoeBgq4XT-Shdlgto1NoX2NHSUs/rs:fit:1057:1200:1/g:ce/aHR0cHM6Ly9icmFu/ZHNsb2dvcy5jb20v/d3AtY29udGVudC91/cGxvYWRzL2ltYWdl/cy9sYXJnZS9hd3Mt/czMtbG9nby5wbmc" alt="firebase" width="40" height="40" title="AWS S3"/> </a><a href="https://www.serverless.com/" target="_blank"> <img src="https://imgs.search.brave.com/D8PnoWnRnNIFBk7YnDttFF4TrmsEhr3LWU-ernO7WUU/rs:fit:1200:1200:1/g:ce/aHR0cHM6Ly9zMy11/cy13ZXN0LTIuYW1h/em9uYXdzLmNvbS9h/c3NldHMuc2l0ZS5z/ZXJ2ZXJsZXNzLmNv/bS9sb2dvcy9zZXJ2/ZXJsZXNzLXNxdWFy/ZS1pY29uLXRleHQu/cG5n" alt="firebase" width="40" height="40" title="Serveless"/> </a>
+
+<br>
+
+<hr>
+
+## 🖥️ Código - Execução (Código Fonte)
 
 **Especificações**:
 
-A aplicação deverá ser desenvolvida com o framework 'serverless' e deverá seguir a estrutura que já foi desenvolvida neste repo.
 
 Passo a passo para iniciar o projeto:
-1. Crie a branch para o seu grupo e efetue o clone
 
-2. Instale o framework serverless em seu computador. Mais informações [aqui](https://www.serverless.com/framework/docs/getting-started)
+1. Instale o framework serverless em seu computador. Mais informações [aqui](https://www.serverless.com/framework/docs/getting-started)
 ```json
 npm install -g serverless
 ```
 
 
-3. Gere suas credenciais (AWS Acess Key e AWS Secret) na console AWS pelo IAM. Mais informações [aqui](https://www.serverless.com/framework/docs/providers/aws/guide/credentials/)
+2. Gere suas credenciais (AWS Acess Key e AWS Secret) na console AWS pelo IAM. Mais informações [aqui](https://www.serverless.com/framework/docs/providers/aws/guide/credentials/)
 
-4. Em seguida insira as credenciais e execute o comando conforme exemplo:
+3. Em seguida insira as credenciais e execute o comando conforme exemplo:
 
 ```json
-serverless config credentials \
-  --provider aws \
-  --key AKIAIOSFODNN7EXAMPLE \
-  --secret wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+serverless config credentials --provider aws --key XXXXXXX --secret XXXXXXX
   ```
 
 Também é possivel configurar via [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) executando o comando:
@@ -43,16 +72,11 @@ Default region name [None]: us-east-1
 Default output format [None]: ENTER
   ```
 
-#### Observação
-As credenciais devem ficar apenas localmente no seu ambiente. Nunca exponha as crendenciais no Readme ou qualquer outro ponto do codigo.
-
-Após executar as instruções acima, o serverless estará pronto para ser utilizado e poderemos publicar a solução na AWS.
-
-5. Para efetuar o deploy da solução na sua conta aws execute (acesse a pasta `api-tts`):
+4. Efetuar o deploy da solução na sua conta aws execute (acesse a pasta `api-tts`):
 ```
 $ serverless deploy
 ```
-Depois de efetuar o deploy, vocẽ terá um retorno parecido com isso:
+Um retorno parecido com isTo:
 
 ```bash
 Deploying api-tts to stage dev (us-east-1)
@@ -68,46 +92,7 @@ functions:
   v1Description: api-tts-dev-v1Description (2.1 kB)
   v2Description: api-tts-dev-v2Description (2.1 kB)
 ```
-6. Abra o browser e confirme que a solução está funcionando colando os 3 endpoints que deixamos como exemplo:
 
-### Rota 1 → Get /
-
-1. Esta rota já está presente no projeto
-2. O retorno rota é:
-```json
-  {
-    "message": "Go Serverless v3.0! Your function executed successfully!",
-    "input": { 
-        ...(event)
-      }
-  }
-```
-3. Status code para sucesso da requisição será `200`
-
-### Rota 2 → Get /v1
-
-1. Esta rota já está presente no projeto
-2. O retorno rota é:
-```json
-  {
-    "message": "TTS api version 1."
-  }
- 
-```
-3. Status code para sucesso da requisição será `200`
-
-### Rota 3 → Get /v2
-1. Esta rota já está presente no projeto
-2. O retorno rota é:
-```json
-  {
-    "message": "TTS api version 2."
-  }
- 
-```
-***
-
-Após conseguir rodar o projeto base o objetivo final será divida em duas partes:
 
 ## Atividade -> Parte 1 
 ### Rota 4 -> Post /v1/tts
@@ -220,33 +205,35 @@ Dessa maneira essa será a arquitetura a ser impantada:
 - status code para erros deverá ser `500`
 
 
-***
 
-## O que será avaliado?
 
-- Projeto em produção na AWS
-- Em python conforme projeto base disponibilizado
-- Seguir as atividades na ordem proposta
-- Sobre as rotas: 
-  - Possuir em cada rota os retornos esperados (somente campos solicitados conforme especificação)
-- Organização geral do código fonte
-  - Estrutura de pastas
-  - Estrutura da logica de negócio
-  - Divisão de responsabilidades em arquivos/pastas distintos
-  - Otimização do código fonte (evitar duplicações de código)
-- Objetividade do README.md 
+## 📤 Deploy
 
-***
+<br>
 
-## Entrega
+## 🚩Acesso ao projeto
 
-- Aceitar o convite do repositório da sprint-6-pb-aws-ifce;
-- **O trabalho deve ser feito em grupos de quatro pessoas**;
-  - Evitar repetições de grupos da sprint anterior;
-- Criar uma branch no repositório com o formato grupo-número (Exemplo: grupo-1);
-- Subir o trabalho na branch com um [Readme.md](README.md) 
-  - documentar detalhes sobre como a avaliação foi desenvolvida
-  - dificuldades conhecidas
-  - como utilizar o sistema
-  - 🔨 código fonte desenvolvido (Sugestão: pasta `src`)
-- O prazo de entrega é até às 12h do dia 13/02/2023 no repositório do github ([https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce](https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce)).
+<hr>
+
+## ♾️ Equipe
+<br>
+
+- Mylena Soares
+- Samara Oliveira
+- Júlio César
+- Jhonatan Gonçalves
+
+<br>
+<hr>
+
+## 📌 Considerações finais
+<br>
+Em resumo, ...
+
+
+
+
+
+
+Avaliação da sexta sprint do programa de bolsas Compass.uol para formação em machine learning para AWS.
+
