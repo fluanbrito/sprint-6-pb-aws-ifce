@@ -4,8 +4,6 @@
 <hr>
 <p align="center">
   
-<img src="https://img.shields.io/static/v1?label=STATUS&message=construindo&color=RED&style=for-the-badge" />
-</p>
 
 
 ## 📌 Tópicos 
@@ -495,9 +493,8 @@ Após a execução do comando as configurações e ferramentas nos serviços da 
 
 ## 📌 Dificuldades
 <br>
-- Liberação das permissões de acesso as aplicações da AWS, particurlarmente no serviço Polly.
-- 
-
+- Liberação das permissões de acesso as aplicações da AWS (Polly, IAM).
+- Integração da página HTML com a API.
 
 ***
 Avaliação da sexta sprint do programa de bolsas Compass.uol para formação em machine learning para AWS.
