@@ -1,13 +1,11 @@
 import boto3
 import os
-import json
-import uuid
+import hashlib
 from datetime import datetime
 
 
 def v2_tts(event, context):
     try:
-        identificador = str(uuid.uuid4())
 
         text = event["phrase"]
 
@@ -20,7 +18,9 @@ def v2_tts(event, context):
             VoiceId="Camila"
         )
 
-        nome_arquivo = identificador+".mp3"
+        hash_ = hashlib.md5(text.encode('utf-8')).hexdigest()
+        nome_arquivo = "audio-"+ hash_
+
         s3 = boto3.client('s3')
 
         s3.put_object(Key=nome_arquivo,
@@ -31,13 +31,13 @@ def v2_tts(event, context):
 
         tabela = dynamoDB.Table("sprint6grupo1")
 
-        hash_ = str(hash(text))
         
         url = "https://" \
             + str(os.environ['BUCKET_NAME']) \
             + ".s3.amazonaws.com/" \
-            + str(identificador) \
+            + nome_arquivo \
             + ".mp3"
+
         
         tabela.put_item(
             Item= {
@@ -45,7 +45,7 @@ def v2_tts(event, context):
                 "phrase": text,
                 "url": url
             }
-            )
+        )
         
 
         return {

@@ -36,6 +36,12 @@ functions:
       - httpApi:
           path: /v2/tts
           method: post
+  v3_tts:
+    handler: v3.v3_tts
+    events:
+      - httpApi:
+          path: /v3/tts
+          method: post
   html_route:
     handler: handler.html_route
     events:
