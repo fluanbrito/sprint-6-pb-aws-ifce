@@ -1,4 +1,4 @@
-# Avaliação Sprint 6 - Programa de Bolsas Compass.uol / AWS e IFCE
+# Avaliação Sprint 6 - Programa de Bolsas Compass UOL / AWS e IFCE
 
 [![N|Solid](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/LogoCompasso-positivo.png/440px-LogoCompasso-positivo.png)](https://compass.uol/pt/home/)
 
@@ -10,7 +10,6 @@ Avaliação da sexta sprint do programa de bolsas Compass UOL para formação em
 * [Objetivo](#objetivo)
 * [Ferramentas](#ferramentas)
 * [Desenvolvimento](#desenvolvimento)
-  * [Conversão para áudio](#conversão-de-texto-em-áudio-via-polly)
   * [Arquitetura serverless](#estrutura-serverless)
   * [Funções](#funções)
     * [Criação do hash](#hash)
@@ -18,6 +17,7 @@ Avaliação da sexta sprint do programa de bolsas Compass UOL para formação em
     * [Conexão com o DynamoDB](#upload-para-o-dynamodb)
     * [Checagem de ID no DynamoDB](#checagem-de-id-no-dynamodb)
   * [Rotas](#rotas)
+  * [Resultado](#resultado)
   * [Conclusão](#conclusão)
   * [Autores](#autores)
 
@@ -39,39 +39,6 @@ Realizar a conversão de texto para áudio utilizando *text to speech* e salvá-
 ***
 
 ## Desenvolvimento
-
-### Conversão de texto em áudio via Polly
-
-```py
-def health(event, context):
-    body = {
-        "message": "Go Serverless v3.0! Your function executed successfully!",
-        "input": event,
-    }
-
-    response = {"statusCode": 200, "body": json.dumps(body)}
-
-    return response
-
-def v1_description(event, context):
-    body = {
-        "message": "TTS api version 1."
-    }
-
-    response = {"statusCode": 200, "body": json.dumps(body)}
-
-    return response
-
-def v2_description(event, context):
-    body = {
-        "message": "TTS api version 2."
-    }
-
-    response = {"statusCode": 200, "body": json.dumps(body)}
-
-    return response
-```
-Esse [trecho de código](https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce/blob/Grupo-5/api-tts/handler.py) permite a geração de voz pela Amazon e contém os *endpoints* da API.
 
 ### Estrutura serverless
 
@@ -120,6 +87,12 @@ functions:
       - http:
           path: v3/tts
           method: post
+  options:
+    handler: routes/options.tts_opt
+    events:
+      - http:
+          path: /options
+          method: get
 ```
 
 O [arquivo YAML](https://github.com/Compass-pb-aws-2022-IFCE/sprint-6-pb-aws-ifce/blob/Grupo-5/api-tts/serverless.yml) define uma aplicação *serverless* na AWS utilizando o serviço de *text-to-speech*.
@@ -128,6 +101,7 @@ O bloco de *functions* que definem o serviço de TTS, sendo elas:
 * **health** retorna uma resposta em JSON ao ser acionada pelo método GET no caminho raiz "/".
 * **v1Description**, **v2Description**, e **v3Description** são acionadas por um GET para os endpoints **/v1**, **/v2**, **/v3** respectivamente.
 * Já as funções **v1_tts**, **v2_tts**, e **v3_tts** são ativadas pelo método POST para as rotas **/v1/tts**, **/v2/tts**, e **/v3/tts**.
+* Por fim, a rota **options** se refere a página principal onde o texto será inserido e enviado para uma das rotas acima.
 
 ## Funções
 
@@ -383,6 +357,11 @@ def v3_tts(event, context):
 
     return response
 ```
+
+## Resultado
+
+A página principal pode ser consultada [aqui](https://4nlkij93xd.execute-api.us-east-1.amazonaws.com/dev/options).
+
 ## Conclusão
 
 O projeto foi desenvolvido utilizando os serviços da AWS: Polly, S3 e DynamoDB.
