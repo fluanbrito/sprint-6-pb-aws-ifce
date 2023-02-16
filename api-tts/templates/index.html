@@ -1,27 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
-    <title>Converter texto em áudio</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Texto para Áudio</title>
 </head>
-    <div>
-        <h2> Conversor de Texto para Áudio</h2>    
-    </div>
+
 <body>
-    <div>
-        <form>
-            <div>
-                <label for="texto">Digite o texto:</label>
-                <textarea name="texto" rows="4"></textarea>
-                <button type="submit">Converter</button>
-                <hr>
-                    <a href="" >Download</a>
-            </div>
+    <header>
+        <h1>Conversor de Texto para Áudio</h1>
+    </header>
+    <main>
+        <form id="form-tts">
+            <label for="input-text">Digite o texto:</label>
+            <textarea id="input-text" name="input-text" rows="4"></textarea>
+            <br>
+            <label for="route-select">Escolha a rota:</label>
+            <select id="route-select" name="route-select">
+                <option value="v1">Rota v1</option>
+                <option value="v2">Rota v2</option>
+                <option value="v3">Rota v3</option>
+            </select>
+            <br>
+            <button type="submit">Converter</button>
         </form>
-    </div>
-    <hr>
-    <div>
-        <tfoot>Compass Uol - PB IFCE - Grupo 1</tfoot>
-    </div>
+        <div id="output"></div>
+    </main>
+    <footer>
+        <p>Compass Uol - PB IFCE - Grupo 1</a></p>
+    </footer>
+
+    <script>
+        const form = document.getElementById("form-tts");
+        const outputDiv = document.getElementById("output");
+        const convertButton = document.querySelector('button[type="submit"]');
+
+        convertButton.addEventListener("click", function (event) {
+            event.preventDefault();
+
+            const text = document.getElementById("input-text").value;
+            const route = document.getElementById("route-select").value;
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", `/${route}/tts`, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        outputDiv.innerHTML = "<pre>" + xhr.responseText + "</pre>";
+                    } else {
+                        outputDiv.innerHTML = "<p>Erro ao realizar a conversão. Tente novamente mais tarde.</p>";
+                    }
+                }
+            };
+        
+            xhr.send(JSON.stringify({ phrase: text }));
+        });
+    </script>
 </body>
+
 </html>

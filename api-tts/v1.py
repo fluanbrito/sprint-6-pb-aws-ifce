@@ -6,16 +6,19 @@ from datetime import datetime
 
 
 def v1_tts(event, context):
+
+    
     try:
         identificador = str(uuid.uuid4())
-        text = event["phrase"]
+        payload = json.loads(event["body"])
+        phrase = payload["phrase"]
 
         polly = boto3.Session(
             region_name='us-east-1').client('polly')
         
         response = polly.synthesize_speech(
             OutputFormat='mp3',
-            Text=text,
+            Text=phrase,
             VoiceId="Camila"
         )
 
@@ -23,11 +26,11 @@ def v1_tts(event, context):
         s3 = boto3.client('s3')
 
         s3.put_object(Key=nome_arquivo,
-                      Bucket=os.environ['BUCKET_NAME'],
+                      Bucket=['sprint6grupo1'],
                       Body=response['AudioStream'].read())
 
         url = "https://" \
-            + str(os.environ['BUCKET_NAME']) \
+            + str(['sprint6grupo1']) \
             + ".s3.amazonaws.com/" \
             + str(identificador) \
             + ".mp3"
@@ -35,7 +38,7 @@ def v1_tts(event, context):
         return {
             "status": 200,
             "body": {
-                "received_phrase": text,
+                "received_phrase": phrase,
                 "url_to_audio": url,
                 "created_audio": f"{datetime.now()}"
             }

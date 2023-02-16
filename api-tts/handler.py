@@ -28,3 +28,17 @@ def v2_description(event, context):
     response = {"statusCode": 200, "body": json.dumps(body)}
 
     return response
+
+def html_route(event, context):
+
+    with open('templates/index.html', 'r') as f:
+        html_content = f.read()
+    
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'text/html',
+        },
+        'body': html_content,
+
+    }
