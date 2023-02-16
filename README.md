@@ -70,19 +70,19 @@ functions:
           path: /v2
           method: get
   v1_tts:
-    handler: routers/rota1.v1_tts
+    handler: routes/rota1.v1_tts
     events:
       - http:
           path: v1/tts
           method: post
   v2_tts:
-    handler: routers/rota2.v2_tts
+    handler: routes/rota2.v2_tts
     events:
       - http:
           path: v2/tts
           method: post
   v3_tts:
-    handler: routers/rota3.v3_tts
+    handler: routes/rota3.v3_tts
     events:
       - http:
           path: v3/tts
