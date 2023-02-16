@@ -9,7 +9,7 @@ class Data:
     """ Esta classe tem por objetivo apenas agrupar os principais
         atributos que serão usados na API """
 
-    def __init__(self,*args, text, url, unique_id):
+    def __init__(self, *args, text, url, unique_id):
         self.text = text
         self.unique_id = unique_id
         self.url = url
@@ -32,7 +32,7 @@ def getAudioData(text: str) -> Data:
         )
 
     hash_ = hashlib.md5(text.encode('utf-8')).hexdigest()
-    nome_arquivo = "audio-" + hash_ + ".mp3"
+    nome_arquivo = "audio-" + text + "-" + hash_[:10] + ".mp3"
     url = "https://" \
         + str(os.environ['BUCKET_NAME']) \
         + ".s3.amazonaws.com/" \
@@ -46,7 +46,6 @@ def getAudioData(text: str) -> Data:
 
     return Data(text = text,
                 unique_id=hash_,
-                date=datetime.now(),
                 url=url)
 
 

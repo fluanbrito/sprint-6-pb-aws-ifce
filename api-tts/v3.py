@@ -23,7 +23,7 @@ def v3_tts(event, context):
 
             dados = getAudioData(text)
 
-            if putIntoTable():
+            if putIntoTable(dados):
                 return {
                     "status": 200,
                     "body": {
