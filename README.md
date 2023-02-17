@@ -15,6 +15,7 @@ A apresentação será desenrolada em duas etapas principais, sendo-as:
 
 # Organização e preparação da aplicação
 ![estrutura_arquivos_sprint6](https://user-images.githubusercontent.com/119500249/219551929-ee86fe3c-853a-4314-988a-cd4e304dbe4d.png)
+
 Segue o exemplo de como vai ficar a organização dos arquivos, cada qual com teus arquivos e pastas separadas.
 
 ## Ferramentas
