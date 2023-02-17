@@ -21,7 +21,6 @@ def v3_tts(event, context):
 
         else:
             # Se o hash não existir, converte o texto em áudio
-            text = event["phrase"]
 
             dados = getAudioData(text)
 
