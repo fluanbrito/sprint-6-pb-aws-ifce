@@ -1,12 +1,15 @@
 from functions.aux import getAudioData, putIntoTable
+import json
+
 
 def v2_tts(event, context):
     try:
 
-        text = event["phrase"]
+        text = json.loads(event.get('body', '{}'))
+        text = text.get('phrase', [])
 
         dados = getAudioData(text)
-        
+
         if putIntoTable(dados):
             return {
                 "status": 200,

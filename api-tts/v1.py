@@ -1,8 +1,11 @@
 from functions.aux import getAudioData
+import json
+
 
 def v1_tts(event, context):
     try:
-        text = event["phrase"]
+        text = json.loads(event.get('body', '{}'))
+        text = text.get('phrase', [])
 
         dados = getAudioData(text)
 

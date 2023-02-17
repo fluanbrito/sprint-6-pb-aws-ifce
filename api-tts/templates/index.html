@@ -1,65 +1,84 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>API Text To Speech</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    />
+    <style>
+      .btn-pink {
+        background-color: #ffc2d9;
+        border-color: #ffc2d9;
+      }
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conversor de Texto para Áudio</title>
-</head>
+      .btn-pink:hover {
+        background-color: #f4a4c4;
+        border-color: #f4a4c4;
+      }
+    </style>
+  </head>
 
-<body>
-    <header>
-        <h1>Conversor de Texto para Áudio</h1>
-    </header>
-    <main>
-        <form id="form-tts">
-            <label for="input-text">Digite o texto:</label>
-            <textarea id="input-text" name="input-text" rows="4"></textarea>
-            <br>
-            <label for="route-select">Escolha a rota:</label>
-            <select id="route-select" name="route-select">
-                <option value="v1">Rota v1</option>
-                <option value="v2">Rota v2</option>
-                <option value="v3">Rota v3</option>
-            </select>
-            <br>
-            <button type="submit">Converter</button>
-        </form>
-        <div id="output"></div>
-    </main>
-    <footer>
-        <p>Compass Uol - PB IFCE - Grupo 1</a></p>
-    </footer>
+  <body>
+    <div
+      class="container d-flex align-items-center justify-content-center vh-100"
+    >
+      <div class="card">
+        <div class="card-body d-flex align-items-center flex-column">
+          <h5 class="card-title text-center">Digite um texto:</h5>
+          <form>
+            <div class="form-group">
+              <input type="text" class="form-control" id="valorInput" />
+            </div>
+            <button
+              type="button"
+              class="btn btn-pink btn-block"
+              onclick="enviarValor()"
+            >
+              Enviar
+            </button>
+          </form>
+          <div id="resultadoDiv" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
 
     <script>
-        const form = document.getElementById("form-tts");
-        const outputDiv = document.getElementById("output");
-        const convertButton = document.querySelector('button[type="submit"]');
+      function enviarValor() {
+        const urlAtual = window.location.href;
+        const valor = document.getElementById("valorInput").value;
 
-        convertButton.addEventListener("click", function (event) {
-            event.preventDefault();
+        const data = {
+          phrase: valor,
+        };
 
-            const text = document.getElementById("input-text").value;
-            const route = document.getElementById("route-select").value;
-
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", `/${route}/tts`, true);
-            xhr.setRequestHeader("Content-Type", "application/json");
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        outputDiv.innerHTML = "<pre>" + xhr.responseText + "</pre>";
-                    } else {
-                        outputDiv.innerHTML = "<p>Erro ao realizar a conversão. Tente novamente mais tarde.</p>";
-                    }
-                }
-            };
-        
-            xhr.send(JSON.stringify({ phrase: text }));
-        });
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", urlAtual);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function () {
+          const response = JSON.parse(xhr.responseText);
+          if (xhr.status === 200) {
+            document.getElementById("resultadoDiv").innerText = JSON.stringify(
+              response,
+              null,
+              2
+            );
+            console.log(xhr.responseText);
+          } else {
+            document.getElementById("resultadoDiv").innerText = JSON.stringify(
+              response,
+              null,
+              2
+            );
+            console.error(xhr.responseText);
+          }
+        };
+        xhr.onerror = function () {
+          console.error("Erro de rede");
+        };
+        xhr.send(JSON.stringify(data));
+      }
     </script>
-</body>
-
+  </body>
 </html>

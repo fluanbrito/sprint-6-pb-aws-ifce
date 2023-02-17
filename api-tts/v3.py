@@ -1,9 +1,11 @@
 from functions.aux import *
 
+
 def v3_tts(event, context):
     try:
         # Obtém o texto do corpo da solicitação
-        text = event["phrase"]
+        text = json.loads(event.get('body', '{}'))
+        text = text.get('phrase', [])
 
         dados = getFromTable(text)
         if dados:
@@ -12,7 +14,7 @@ def v3_tts(event, context):
                 "body": {
                     "received_phrase": text,
                     "url_to_audio": dados.url,
-                    "created_audio":dados.date,
+                    "created_audio": dados.date,
                     "unique_id": dados.unique_id
                 }
             }
